@@ -2,7 +2,7 @@
 #include <vector>
 #include <cmath>
 
-// Konstanten
+// Constants
 const int screenWidth = 800;
 const int screenHeight = 600;
 const int maxAsteroids = 10;
@@ -11,7 +11,7 @@ const float playerRotationSpeed = 5.0f;
 const float bulletSpeed = 10.0f;
 const int maxBullets = 10;
 
-// Spieler-Struktur
+// Player structure
 struct Player {
     Vector2 position;
     Vector2 velocity;
@@ -20,7 +20,7 @@ struct Player {
     bool active;
 };
 
-// Asteroid-Struktur
+// Asteroid structure
 struct Asteroid {
     Vector2 position;
     Vector2 velocity;
@@ -29,7 +29,7 @@ struct Asteroid {
     bool active;
 };
 
-// Projektil-Struktur
+// Bullet structure
 struct Bullet {
     Vector2 position;
     Vector2 velocity;
@@ -38,7 +38,7 @@ struct Bullet {
     float lifetime;
 };
 
-// Spielzustand
+// Game state
 struct Game {
     Player player;
     std::vector<Asteroid> asteroids;
@@ -47,59 +47,61 @@ struct Game {
     bool gameOver;
 };
 
-// Initialisiert den Spieler
+// Initialize player
 void InitPlayer(Player& player) {
-    player.position = { screenWidth / 2.0f, screenHeight / 2.0f };
+    player.position = { static_cast<float>(screenWidth) / 2.0f, static_cast<float>(screenHeight) / 2.0f };
     player.velocity = { 0.0f, 0.0f };
     player.rotation = 0.0f;
     player.active = true;
 }
 
-// Initialisiert einen Asteroiden
+// Initialize asteroid
 Asteroid InitAsteroid() {
     Asteroid asteroid;
 
-    // Position am Rand des Bildschirms
+    // Position at screen edge
     if (GetRandomValue(0, 1) == 0) {
-        asteroid.position.x = GetRandomValue(0, screenWidth);
-        asteroid.position.y = ((GetRandomValue(0, 1) == 0) ? 0 : screenHeight));
+        asteroid.position.x = static_cast<float>(GetRandomValue(0, screenWidth));
+        asteroid.position.y = (GetRandomValue(0, 1) == 0) ? 0.0f : static_cast<float>(screenHeight);
     }
     else {
-        asteroid.position.x = ((GetRandomValue(0, 1) == 0) ? 0 : screenWidth));
-        asteroid.position.y = GetRandomValue(0, screenHeight);
+        asteroid.position.x = (GetRandomValue(0, 1) == 0 ? 0.0f : static_cast<float>(screenWidth));
+        asteroid.position.y = static_cast<float>(GetRandomValue(0, screenHeight));
     }
 
-    // Geschwindigkeit in Richtung Bildschirmmitte
-    Vector2 direction = { screenWidth / 2.0f - asteroid.position.x, screenHeight / 2.0f - asteroid.position.y };
-    float length = sqrt(direction.x * direction.x + direction.y * direction.y);
+    // Velocity towards screen center
+    Vector2 direction = { static_cast<float>(screenWidth) / 2.0f - asteroid.position.x,
+                         static_cast<float>(screenHeight) / 2.0f - asteroid.position.y };
+    float length = sqrtf(direction.x * direction.x + direction.y * direction.y);
     direction.x /= length;
     direction.y /= length;
 
-    asteroid.velocity = { direction.x * GetRandomValue(1, 3), direction.y * GetRandomValue(1, 3) };
-    asteroid.rotation = GetRandomValue(0, 360);
-    asteroid.size = GetRandomValue(20, 50);
+    asteroid.velocity = { direction.x * static_cast<float>(GetRandomValue(1, 3)),
+                         direction.y * static_cast<float>(GetRandomValue(1, 3)) };
+    asteroid.rotation = static_cast<float>(GetRandomValue(0, 360));
+    asteroid.size = static_cast<float>(GetRandomValue(20, 50));
     asteroid.active = true;
 
     return asteroid;
 }
 
-// Initialisiert ein Projektil
+// Initialize bullet
 Bullet InitBullet(Vector2 position, float rotation) {
     Bullet bullet;
     bullet.position = position;
     bullet.rotation = rotation;
 
-    // Geschwindigkeit basierend auf der Rotation
+    // Velocity based on rotation
     float rad = rotation * DEG2RAD;
-    bullet.velocity = { sin(rad) * bulletSpeed, -cos(rad) * bulletSpeed };
+    bullet.velocity = { sinf(rad) * bulletSpeed, -cosf(rad) * bulletSpeed };
 
     bullet.active = true;
-    bullet.lifetime = 60; // 60 Frames (~1 Sekunde)
+    bullet.lifetime = 60.0f; // 60 frames (~1 second)
 
     return bullet;
 }
 
-// Aktualisiert den Spieler
+// Update player
 void UpdatePlayer(Player& player) {
     if (!player.active) return;
 
@@ -107,73 +109,73 @@ void UpdatePlayer(Player& player) {
     if (IsKeyDown(KEY_LEFT)) player.rotation -= playerRotationSpeed;
     if (IsKeyDown(KEY_RIGHT)) player.rotation += playerRotationSpeed;
 
-    // Beschleunigung
+    // Acceleration
     if (IsKeyDown(KEY_UP)) {
         float rad = player.rotation * DEG2RAD;
-        player.velocity.x += sin(rad) * 0.2f;
-        player.velocity.y -= cos(rad) * 0.2f;
+        player.velocity.x += sinf(rad) * 0.2f;
+        player.velocity.y -= cosf(rad) * 0.2f;
     }
 
-    // Bewegung
+    // Movement
     player.position.x += player.velocity.x;
     player.position.y += player.velocity.y;
 
-    // Bildschirmbegrenzung
-    if (player.position.x < 0) player.position.x = screenWidth;
-    if (player.position.x > screenWidth) player.position.x = 0;
-    if (player.position.y < 0) player.position.y = screenHeight;
-    if (player.position.y > screenHeight) player.position.y = 0;
+    // Screen wrapping
+    if (player.position.x < 0.0f) player.position.x = static_cast<float>(screenWidth);
+    if (player.position.x > static_cast<float>(screenWidth)) player.position.x = 0.0f;
+    if (player.position.y < 0.0f) player.position.y = static_cast<float>(screenHeight);
+    if (player.position.y > static_cast<float>(screenHeight)) player.position.y = 0.0f;
 
-    // Reibung
+    // Friction
     player.velocity.x *= 0.98f;
     player.velocity.y *= 0.98f;
 }
 
-// Aktualisiert die Asteroiden
+// Update asteroids
 void UpdateAsteroids(std::vector<Asteroid>& asteroids) {
     for (auto& asteroid : asteroids) {
         if (!asteroid.active) continue;
 
-        // Bewegung
+        // Movement
         asteroid.position.x += asteroid.velocity.x;
         asteroid.position.y += asteroid.velocity.y;
         asteroid.rotation += 0.5f;
 
-        // Bildschirmbegrenzung
-        if (asteroid.position.x < -asteroid.size) asteroid.position.x = screenWidth + asteroid.size;
-        if (asteroid.position.x > screenWidth + asteroid.size) asteroid.position.x = -asteroid.size;
-        if (asteroid.position.y < -asteroid.size) asteroid.position.y = screenHeight + asteroid.size;
-        if (asteroid.position.y > screenHeight + asteroid.size) asteroid.position.y = -asteroid.size;
+        // Screen wrapping
+        if (asteroid.position.x < -asteroid.size) asteroid.position.x = static_cast<float>(screenWidth) + asteroid.size;
+        if (asteroid.position.x > static_cast<float>(screenWidth) + asteroid.size) asteroid.position.x = -asteroid.size;
+        if (asteroid.position.y < -asteroid.size) asteroid.position.y = static_cast<float>(screenHeight) + asteroid.size;
+        if (asteroid.position.y > static_cast<float>(screenHeight) + asteroid.size) asteroid.position.y = -asteroid.size;
     }
 }
 
-// Aktualisiert die Projektile
+// Update bullets
 void UpdateBullets(std::vector<Bullet>& bullets) {
     for (auto& bullet : bullets) {
         if (!bullet.active) continue;
 
-        // Bewegung
+        // Movement
         bullet.position.x += bullet.velocity.x;
         bullet.position.y += bullet.velocity.y;
-        bullet.lifetime--;
+        bullet.lifetime -= 1.0f;
 
-        // Deaktivieren wenn Lebenszeit abgelaufen oder außerhalb des Bildschirms
-        if (bullet.lifetime <= 0 ||
-            bullet.position.x < 0 || bullet.position.x > screenWidth ||
-            bullet.position.y < 0 || bullet.position.y > screenHeight) {
+        // Deactivate when lifetime expires or off-screen
+        if (bullet.lifetime <= 0.0f ||
+            bullet.position.x < 0.0f || bullet.position.x > static_cast<float>(screenWidth) ||
+            bullet.position.y < 0.0f || bullet.position.y > static_cast<float>(screenHeight)) {
             bullet.active = false;
         }
     }
 }
 
-// Überprüft Kollisionen
+// Check collisions
 void CheckCollisions(Game& game) {
-    // Spieler mit Asteroiden
+    // Player with asteroids
     for (auto& asteroid : game.asteroids) {
         if (!asteroid.active || !game.player.active) continue;
 
-        float distance = sqrt(pow(game.player.position.x - asteroid.position.x, 2) +
-            pow(game.player.position.y - asteroid.position.y, 2));
+        float distance = sqrtf(powf(game.player.position.x - asteroid.position.x, 2.0f) +
+            powf(game.player.position.y - asteroid.position.y, 2.0f));
 
         if (distance < asteroid.size) {
             game.player.active = false;
@@ -181,23 +183,23 @@ void CheckCollisions(Game& game) {
         }
     }
 
-    // Projektile mit Asteroiden
+    // Bullets with asteroids
     for (auto& bullet : game.bullets) {
         if (!bullet.active) continue;
 
         for (auto& asteroid : game.asteroids) {
             if (!asteroid.active) continue;
 
-            float distance = sqrt(pow(bullet.position.x - asteroid.position.x, 2) +
-                pow(bullet.position.y - asteroid.position.y, 2));
+            float distance = sqrtf(powf(bullet.position.x - asteroid.position.x, 2.0f) +
+                powf(bullet.position.y - asteroid.position.y, 2.0f));
 
             if (distance < asteroid.size) {
                 bullet.active = false;
                 asteroid.active = false;
                 game.score += 100;
 
-                // Neuen Asteroiden spawnen, wenn zu wenige vorhanden sind
-                if (game.asteroids.size() < maxAsteroids && GetRandomValue(0, 100) > 70) {
+                // Spawn new asteroid if too few remain
+                if (game.asteroids.size() < static_cast<size_t>(maxAsteroids) && GetRandomValue(0, 100) > 70) {
                     game.asteroids.push_back(InitAsteroid());
                 }
             }
@@ -205,69 +207,73 @@ void CheckCollisions(Game& game) {
     }
 }
 
-// Zeichnet den Spieler
+// Draw player
 void DrawPlayer(const Player& player) {
     if (!player.active) return;
 
-    Vector2 v1 = { player.position.x + sin(player.rotation * DEG2RAD) * 20.0f,
-                   player.position.y - cos(player.rotation * DEG2RAD) * 20.0f };
-    Vector2 v2 = { player.position.x - sin(player.rotation * DEG2RAD + 0.8f) * 10.0f,
-                   player.position.y + cos(player.rotation * DEG2RAD + 0.8f) * 10.0f };
-    Vector2 v3 = { player.position.x - sin(player.rotation * DEG2RAD - 0.8f) * 10.0f,
-                   player.position.y + cos(player.rotation * DEG2RAD - 0.8f) * 10.0f };
+    Vector2 v1 = { player.position.x + sinf(player.rotation * DEG2RAD) * 20.0f,
+                   player.position.y - cosf(player.rotation * DEG2RAD) * 20.0f };
+    Vector2 v2 = { player.position.x - sinf(player.rotation * DEG2RAD + 0.8f) * 10.0f,
+                   player.position.y + cosf(player.rotation * DEG2RAD + 0.8f) * 10.0f };
+    Vector2 v3 = { player.position.x - sinf(player.rotation * DEG2RAD - 0.8f) * 10.0f,
+                   player.position.y + cosf(player.rotation * DEG2RAD - 0.8f) * 10.0f };
 
     DrawTriangle(v1, v2, v3, WHITE);
 }
 
-// Zeichnet die Asteroiden
+// Draw asteroids
 void DrawAsteroids(const std::vector<Asteroid>& asteroids) {
     for (const auto& asteroid : asteroids) {
         if (!asteroid.active) continue;
 
-        DrawCircleLines(asteroid.position.x, asteroid.position.y, asteroid.size, GRAY);
+        DrawCircleLines(static_cast<int>(asteroid.position.x),
+            static_cast<int>(asteroid.position.y),
+            static_cast<int>(asteroid.size), GRAY);
     }
 }
 
-// Zeichnet die Projektile
+// Draw bullets
 void DrawBullets(const std::vector<Bullet>& bullets) {
     for (const auto& bullet : bullets) {
         if (!bullet.active) continue;
 
-        DrawCircle(bullet.position.x, bullet.position.y, 3, YELLOW);
+        DrawCircle(static_cast<int>(bullet.position.x),
+            static_cast<int>(bullet.position.y),
+            3, YELLOW);
     }
 }
 
 int main() {
-    // Fenster initialisieren
-    InitWindow(screenWidth, screenHeight, "Asteroids mit Raylib");
+    // Initialize window
+    InitWindow(screenWidth, screenHeight, "Asteroids with Raylib");
     SetTargetFPS(60);
 
-    // Spiel initialisieren
+    // Initialize game
     Game game;
     InitPlayer(game.player);
     game.score = 0;
     game.gameOver = false;
 
-    // Asteroiden erstellen
+    // Create asteroids
     for (int i = 0; i < maxAsteroids / 2; i++) {
         game.asteroids.push_back(InitAsteroid());
     }
 
-    // Hauptspielschleife
+    // Main game loop
     while (!WindowShouldClose()) {
-        // Spiel aktualisieren
+        // Update game
         if (!game.gameOver) {
             UpdatePlayer(game.player);
             UpdateAsteroids(game.asteroids);
             UpdateBullets(game.bullets);
             CheckCollisions(game);
 
-            // Projektil abfeuern
-            if (IsKeyPressed(KEY_SPACE) && game.bullets.size() < maxBullets) {
+            // Fire bullet
+            if (IsKeyPressed(KEY_SPACE) && game.bullets.size() < static_cast<size_t>(maxBullets)) {
                 game.bullets.push_back(InitBullet(game.player.position, game.player.rotation));
             }
 
-            // Neue Asteroiden spawnen, wenn zu wenige vorhanden sind
+            // Spawn new asteroids if too few remain
             int activeAsteroids = 0;
             for (const auto& asteroid : game.asteroids) {
                 if (asteroid.active) activeAsteroids++;
@@ -278,7 +284,7 @@ int main() {
             }
         }
         else {
-            // Spiel neustarten
+            // Restart game
             if (IsKeyPressed(KEY_R)) {
                 game.player.active = true;
                 game.asteroids.clear();
@@ -292,7 +298,7 @@ int main() {
             }
         }
 
-        // Zeichnen
+        // Draw
         BeginDrawing();
         ClearBackground(BLACK);
 
@@ -300,18 +306,18 @@ int main() {
         DrawAsteroids(game.asteroids);
         DrawBullets(game.bullets);
 
-        // Punkte anzeigen
-        DrawText(TextFormat("Punkte: %d", game.score), 10, 10, 20, WHITE);
+        // Draw score
+        DrawText(TextFormat("Score: %d", game.score), 10, 10, 20, WHITE);
 
-        // Game Over anzeigen
+        // Draw Game Over
         if (game.gameOver) {
             DrawText("GAME OVER", screenWidth / 2 - MeasureText("GAME OVER", 40) / 2, screenHeight / 2 - 40, 40, RED);
-            DrawText("Drücke R zum Neustarten", screenWidth / 2 - MeasureText("Drücke R zum Neustarten", 20) / 2, screenHeight / 2 + 20, 20, WHITE);
+            DrawText("Press R to restart", screenWidth / 2 - MeasureText("Press R to restart", 20) / 2, screenHeight / 2 + 20, 20, WHITE);
         }
         EndDrawing();
     }
 
-    // Aufräumen
+    // Cleanup
     CloseWindow();
     return 0;
 }
