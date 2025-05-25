@@ -202,7 +202,14 @@ void Game::UpdateGameOver() {
 // PHASE 4: Drawing (nur const Methoden)
 void Game::Draw() {
     BeginDrawing();
-    ClearBackground(BLACK);
+
+    // Background depends on game state
+    if (currentState == IN_GAME) {
+        DrawCheckeredBackground();
+    }
+    else {
+        ClearBackground(BLACK);
+    }
 
     switch (currentState) {
     case MAIN_MENU:
@@ -221,6 +228,32 @@ void Game::Draw() {
     }
 
     EndDrawing();
+}
+
+void Game::DrawCheckeredBackground() {
+    // Draw white background first
+    ClearBackground(WHITE);
+
+    // Grid size for checkered pattern
+    const int gridSize = 40;
+
+    // Draw checkered pattern
+    for (int x = 0; x < SCREEN_WIDTH; x += gridSize) {
+        for (int y = 0; y < SCREEN_HEIGHT; y += gridSize) {
+            // Alternate between light gray and white
+            if ((x / gridSize + y / gridSize) % 2 == 0) {
+                DrawRectangle(x, y, gridSize, gridSize, Color{ 240, 240, 240, 255 });
+            }
+        }
+    }
+
+    // Draw grid lines for better visibility
+    for (int x = 0; x <= SCREEN_WIDTH; x += gridSize) {
+        DrawLine(x, 0, x, SCREEN_HEIGHT, Color{ 220, 220, 220, 255 });
+    }
+    for (int y = 0; y <= SCREEN_HEIGHT; y += gridSize) {
+        DrawLine(0, y, SCREEN_WIDTH, y, Color{ 220, 220, 220, 255 });
+    }
 }
 
 void Game::DrawMainMenu() {
@@ -253,10 +286,11 @@ void Game::DrawInGame() {
         powerup.Draw();
     }
 
-    // Draw UI
-    DrawText(("SCORE: " + std::to_string(gameScore.GetScore())).c_str(), 10, 10, 20, WHITE);
-    DrawText(("LIVES: " + std::to_string(player.GetLives())).c_str(), 10, 40, 20, WHITE);
-    DrawText(("LEVEL: " + std::to_string(gameScore.GetLevel())).c_str(), 10, 70, 20, WHITE);
+    // Draw UI with dark background for better readability
+    DrawRectangle(5, 5, 200, 100, Color{ 0, 0, 0, 150 }); // Semi-transparent black background
+    DrawText(("SCORE: " + std::to_string(gameScore.GetScore())).c_str(), 10, 10, 20, BLACK);
+    DrawText(("LIVES: " + std::to_string(player.GetLives())).c_str(), 10, 40, 20, BLACK);
+    DrawText(("LEVEL: " + std::to_string(gameScore.GetLevel())).c_str(), 10, 70, 20, BLACK);
 }
 
 void Game::DrawGameOver() {

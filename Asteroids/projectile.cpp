@@ -38,7 +38,7 @@ void Projectile::Update(float deltaTime) {
 
 void Projectile::Draw() const {
     if (!active) return;
-    DrawCircleV(position, 2, WHITE);
+    DrawCircleV(position, 2, BLACK);
 }
 
 Rectangle Projectile::GetBounds() const {

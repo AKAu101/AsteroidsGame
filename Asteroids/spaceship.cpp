@@ -2,159 +2,144 @@
 #include "globals.h"
 #include <cmath>
 
-Spaceship::Spaceship() {
+// Mathematische Konstanten
+constexpr float DEG120 = 2.0943951f; // 120° in Rad
+constexpr float DEG240 = 4.1887902f; // 240° in Rad
+
+Spaceship::Spaceship() : 
+    triangleSize(15.0f),
+    lives(STARTING_LIVES) 
+{
     Reset();
-    lives = STARTING_LIVES;
 }
 
 void Spaceship::Reset() {
-    position = { SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f };
+    position = { SCREEN_WIDTH/2.0f, SCREEN_HEIGHT/2.0f };
     velocity = { 0, 0 };
     rotation = 0;
     isThrusting = false;
     invulnerable = false;
     invulnerabilityTimer = 0.0f;
     thrustCooldown = 0;
-    
-    // Dreiecksparameter
-    frontDistance = 15.0f;
-    sideDistance = 10.0f;
-    angleOffset = 30.0f;
+    UpdateTriangleGeometry();
 }
 
 void Spaceship::Update(float deltaTime) {
-    // Physik anwenden
+    // Bewegung
     position.x += velocity.x * deltaTime;
     position.y += velocity.y * deltaTime;
 
-    // Screen wrapping
-    if (position.x < 0) position.x = SCREEN_WIDTH;
-    if (position.x > SCREEN_WIDTH) position.x = 0;
-    if (position.y < 0) position.y = SCREEN_HEIGHT;
-    if (position.y > SCREEN_HEIGHT) position.y = 0;
+    // Bildschirmbegrenzung
+    position.x = fmod(position.x + SCREEN_WIDTH, SCREEN_WIDTH);
+    position.y = fmod(position.y + SCREEN_HEIGHT, SCREEN_HEIGHT);
 
-    // Reibung anwenden
+    // Reibung
     velocity.x *= 0.99f;
     velocity.y *= 0.99f;
 
-    // Unverwundbarkeit updaten
+    // Statusupdates
     if (invulnerable) {
         invulnerabilityTimer -= deltaTime;
-        if (invulnerabilityTimer <= 0) {
-            invulnerable = false;
-        }
+        if (invulnerabilityTimer <= 0) invulnerable = false;
     }
-
-    // Cooldowns updaten
+    
     if (thrustCooldown > 0) {
         thrustCooldown -= deltaTime;
     }
+
+    UpdateTriangleGeometry();
+}
+
+void Spaceship::UpdateTriangleGeometry() {
+    const float rad = rotation * DEG2RAD;
+    const float cosRot = cos(rad);
+    const float sinRot = sin(rad);
     
-    // Dreieckspunkte aktualisieren
-    UpdateTrianglePoints();
-}
-
-void Spaceship::UpdateTrianglePoints() {
-    // Aktualisiere die Dreieckspunkte basierend auf aktueller Position und Rotation
-    float radRotation = rotation * WINKEL2GRAD;
+    // Spitze (vorwärts)
+    trianglePoints[0] = {
+        position.x + cosRot * triangleSize,
+        position.y + sinRot * triangleSize
+    };
     
-    front = {
-        position.x + cos(radRotation) * frontDistance,
-        position.y + sin(radRotation) * frontDistance
+    // Linker Punkt
+    trianglePoints[1] = {
+        position.x + (cosRot * cos(DEG120) - sinRot * sin(DEG120)) * triangleSize,
+        position.y + (sinRot * cos(DEG120) + cosRot * sin(DEG120)) * triangleSize
     };
-
-    left = {
-        position.x + cos(radRotation + (180 - angleOffset) * WINKEL2GRAD) * sideDistance,
-        position.y + sin(radRotation + (180 - angleOffset) * WINKEL2GRAD) * sideDistance
-    };
-
-    right = {
-        position.x + cos(radRotation + (180 + angleOffset) * WINKEL2GRAD) * sideDistance,
-        position.y + sin(radRotation + (180 + angleOffset) * WINKEL2GRAD) * sideDistance
+    
+    // Rechter Punkt
+    trianglePoints[2] = {
+        position.x + (cosRot * cos(DEG240) - sinRot * sin(DEG240)) * triangleSize,
+        position.y + (sinRot * cos(DEG240) + cosRot * sin(DEG240)) * triangleSize
     };
 }
 
-void Spaceship::StartThrust() {
-    isThrusting = true;
-}
-
-void Spaceship::StopThrust() {
-    isThrusting = false;
+void Spaceship::Draw() const {
+    if (invulnerable && ((int)(invulnerabilityTimer * 10) % 2)) return;
+    
+    // Raumschiffkörper
+    DrawLineV(trianglePoints[1], trianglePoints[0], BLACK); // Links zur Spitze
+    DrawLineV(trianglePoints[2], trianglePoints[0], BLACK); // Rechts zur Spitze
+    
+    // Schubeffekt
+    if (isThrusting) {
+        Vector2 thrustBase = {
+            (trianglePoints[1].x + trianglePoints[2].x) * 0.5f,
+            (trianglePoints[1].y + trianglePoints[2].y) * 0.5f
+        };
+        DrawLineV(trianglePoints[1], thrustBase, ORANGE);
+        DrawLineV(trianglePoints[2], thrustBase, ORANGE);
+    }
 }
 
 void Spaceship::ApplyThrust(float deltaTime) {
     if (!isThrusting) return;
     
-    // 1. Basis-Mitte berechnen (virtueller Punkt zwischen left/right)
-    Vector2 baseMid = {
-        (left.x + right.x) * 0.5f,
-        (left.y + right.y) * 0.5f
+    Vector2 thrustDirection = {
+        trianglePoints[0].x - position.x,
+        trianglePoints[0].y - position.y
     };
-
-    // 2. Schubrichtung: Von Basis-Mitte zur Spitze
-    Vector2 thrustDir = {
-        front.x - baseMid.x,
-        front.y - baseMid.y
-    };
-
-    // 3. Normalisiere den Richtungsvektor
-    float thrustLength = sqrt(thrustDir.x * thrustDir.x + thrustDir.y * thrustDir.y);
-    if (thrustLength > 0) {
-        thrustDir.x /= thrustLength;
-        thrustDir.y /= thrustLength;
-    }
-
-    // 4. Beschleunigung anwenden
-    velocity.x += thrustDir.x * SPACESHIP_ACCELERATION * deltaTime;
-    velocity.y += thrustDir.y * SPACESHIP_ACCELERATION * deltaTime;
-
-    // 5. Geschwindigkeit begrenzen
-    float speed = sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
-    if (speed > MAX_SPACESHIP_SPEED) {
-        velocity.x = (velocity.x / speed) * MAX_SPACESHIP_SPEED;
-        velocity.y = (velocity.y / speed) * MAX_SPACESHIP_SPEED;
+    
+    // Normalisieren
+    float length = sqrt(thrustDirection.x*thrustDirection.x + thrustDirection.y*thrustDirection.y);
+    if (length > 0) {
+        thrustDirection.x /= length;
+        thrustDirection.y /= length;
+        
+        velocity.x += thrustDirection.x * SPACESHIP_ACCELERATION * deltaTime;
+        velocity.y += thrustDirection.y * SPACESHIP_ACCELERATION * deltaTime;
+        
+        // Geschwindigkeitsbegrenzung
+        float speed = sqrt(velocity.x*velocity.x + velocity.y*velocity.y);
+        if (speed > MAX_SPACESHIP_SPEED) {
+            velocity.x = (velocity.x/speed) * MAX_SPACESHIP_SPEED;
+            velocity.y = (velocity.y/speed) * MAX_SPACESHIP_SPEED;
+        }
     }
 }
 
+// Restliche Methoden...
+void Spaceship::StartThrust() { isThrusting = true; }
+void Spaceship::StopThrust() { isThrusting = false; }
 void Spaceship::Rotate(float direction, float deltaTime) {
     rotation += direction * SPACESHIP_ROTATION_SPEED * deltaTime;
 }
+Vector2 Spaceship::GetPosition() const { return position; }
+float Spaceship::GetRotation() const { return rotation; }
+Vector2 Spaceship::GetVelocity() const { return velocity; }
+bool Spaceship::IsInvulnerable() const { return invulnerable; }
+bool Spaceship::IsThrusting() const { return isThrusting; }
+int Spaceship::GetLives() const { return lives; }
+void Spaceship::AddLife() { lives++; }
 
-void Spaceship::Draw() const {
-    // Flackern nur wenn unverwundbar
-    if (invulnerable && ((int)(invulnerabilityTimer * 10) % 2)) {
-        return;
-    }
-
-    // Dreieck zeichnen (offene Basis)
-    DrawLineV(front, left, WHITE);
-    DrawLineV(front, right, WHITE);
-    
-    // Optional: Punkt an der Spitze markieren
-    DrawCircleV(front, 3, RED);
-
-    // Schub-Effekt zeichnen
-    if (isThrusting) {
-        Vector2 baseMid = {
-            (left.x + right.x) * 0.5f,
-            (left.y + right.y) * 0.5f
-        };
-        DrawLineV(left, baseMid, ORANGE);
-        DrawLineV(right, baseMid, ORANGE);
-    }
+Rectangle Spaceship::GetBounds() const {
+    return { position.x - triangleSize, position.y - triangleSize,
+             triangleSize * 2, triangleSize * 2 };
 }
 
 void Spaceship::LoseLife() {
     lives--;
     invulnerable = true;
     invulnerabilityTimer = 3.0f;
-    position = { SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f };
-    velocity = { 0, 0 };
-    rotation = 0;
-    isThrusting = false;
-}
-
-Rectangle Spaceship::GetBounds() const {
-    return { position.x - frontDistance, position.y - frontDistance, 
-             frontDistance * 2, frontDistance * 2 };
+    Reset();
 }

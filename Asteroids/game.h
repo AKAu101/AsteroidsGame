@@ -51,6 +51,7 @@ private:
     void HandleAsteroidDestruction(int asteroidIndex);
 
     // PHASE 4: Drawing (const methods)
+    void DrawCheckeredBackground();  // Neue Methode für karierten Hintergrund
     void DrawMainMenu();
     void DrawInGame();
     void DrawGameOver();

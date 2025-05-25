@@ -28,4 +28,5 @@ private:
     float rotation;
     float rotationSpeed;
     bool active;
+    int colorIndex; // New member for color variation
 };

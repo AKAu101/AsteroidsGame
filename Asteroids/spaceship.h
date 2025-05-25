@@ -1,4 +1,3 @@
-// spaceship.h - Spielerklasse Definitionen
 #ifndef SPACESHIP_H
 #define SPACESHIP_H
 
@@ -6,42 +5,50 @@
 
 class Spaceship {
 private:
+    // Kernvariablen
     Vector2 position;
     Vector2 velocity;
     float rotation;
+    float triangleSize;
+
+    // Zustandsvariablen
     bool isThrusting;
-    int lives;
     bool invulnerable;
+    int lives;
     float invulnerabilityTimer;
     float thrustCooldown;
+
+    // Dreiecksgeometrie
+    Vector2 trianglePoints[3]; // 0=Spitze, 1=Links, 2=Rechts
+
+    void UpdateTriangleGeometry();
 
 public:
     Spaceship();
 
-    // KEIN Input-Handling mehr - nur Zustandsänderungen
+    // Kernmethoden
     void Update(float deltaTime);
-    void Draw() const;  // const = ändert nichts
+    void Draw() const;
+    void Reset();
 
-    // Öffentliche Aktionen (werden von Game aufgerufen)
+    // Steuerung
     void StartThrust();
     void StopThrust();
     void ApplyThrust(float deltaTime);
     void Rotate(float direction, float deltaTime);
 
-    void Reset();
-
-    // Getters (alle const)
-    Vector2 GetPosition() const { return position; }
-    float GetRotation() const { return rotation; }
-    Vector2 GetVelocity() const { return velocity; }
-    bool IsInvulnerable() const { return invulnerable; }
-    bool IsThrusting() const { return isThrusting; }
-    int GetLives() const { return lives; }
+    // Statusabfragen
+    Vector2 GetPosition() const;
+    float GetRotation() const;
+    Vector2 GetVelocity() const;
+    bool IsInvulnerable() const;
+    bool IsThrusting() const;
+    int GetLives() const;
     Rectangle GetBounds() const;
 
-    // Spiellogik
+    // Lebensmanagement
     void LoseLife();
-    void AddLife() { lives++; }
+    void AddLife();
 };
 
 #endif
