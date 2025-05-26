@@ -229,45 +229,54 @@ void Game::Draw() {
 
     EndDrawing();
 }
-
 void Game::DrawCheckeredBackground() {
-    // Draw white background first
-    ClearBackground(WHITE);
+    // MS Paint default background
+    ClearBackground(WHITE); // White
 
-    // Grid size for checkered pattern
-    const int gridSize = 40;
-
-    // Draw checkered pattern
-    for (int x = 0; x < SCREEN_WIDTH; x += gridSize) {
-        for (int y = 0; y < SCREEN_HEIGHT; y += gridSize) {
-            // Alternate between light gray and white
-            if ((x / gridSize + y / gridSize) % 2 == 0) {
-                DrawRectangle(x, y, gridSize, gridSize, Color{ 240, 240, 240, 255 });
-            }
-        }
+    // Draw grid lines
+    for (int x = 0; x < SCREEN_WIDTH; x += 40) {
+        DrawLine(x, 0, x, SCREEN_HEIGHT, LIGHTGRAY); // Silver lines
     }
-
-    // Draw grid lines for better visibility
-    for (int x = 0; x <= SCREEN_WIDTH; x += gridSize) {
-        DrawLine(x, 0, x, SCREEN_HEIGHT, Color{ 220, 220, 220, 255 });
-    }
-    for (int y = 0; y <= SCREEN_HEIGHT; y += gridSize) {
-        DrawLine(0, y, SCREEN_WIDTH, y, Color{ 220, 220, 220, 255 });
+    for (int y = 0; y < SCREEN_HEIGHT; y += 40) {
+        DrawLine(0, y, SCREEN_WIDTH, y, LIGHTGRAY); // Silver lines
     }
 }
 
+
 void Game::DrawMainMenu() {
-    DrawText("ASTEROIDS", SCREEN_WIDTH / 2 - 120, 200, 40, WHITE);
-
-    const char* menuItems[] = { "START GAME", "OPTIONS", "QUIT" };
-
-    for (int i = 0; i < 3; i++) {
-        Color color = (i == menuSelection) ? YELLOW : WHITE;
-        DrawText(menuItems[i], SCREEN_WIDTH / 2 - 60, 350 + i * 50, 20, color);
+    // MS Paint-ähnlicher Hintergrund
+    ClearBackground(MSPAINT_COLORS[3]); // Weiß
+    DrawRectangle(10, 10, SCREEN_WIDTH-20, SCREEN_HEIGHT-20, MSPAINT_COLORS[2]); // Hellgrauer Rahmen
+    
+    // Titel mit "ausgefranster" Schrift
+    const char* title = "ASTEROIDS";
+    int titleWidth = MeasureText(title, 40);
+    for (int i = 0; i < titleWidth; i += 2) {
+        DrawText(title, SCREEN_WIDTH/2 - titleWidth/2 + GetRandomValue(-1,1), 
+                200 + GetRandomValue(-1,1), 40, BLACK);
     }
 
-    DrawText(("HIGH SCORE: " + std::to_string(gameScore.GetHighScore())).c_str(),
-        SCREEN_WIDTH / 2 - 80, 550, 20, WHITE);
+    // 3D-Buttons wie in MS Paint
+    const char* menuItems[] = { "START GAME", "OPTIONS", "QUIT" };
+    for (int i = 0; i < 3; i++) {
+        // Button-Rahmen
+        DrawRectangle(SCREEN_WIDTH/2 - 100, 350 + i*60, 200, 40, MSPAINT_COLORS[2]);
+        if (i == menuSelection) {
+            DrawRectangle(SCREEN_WIDTH/2 - 98, 352 + i*60, 196, 36, MSPAINT_COLORS[5]); // Rot wenn ausgewählt
+        } else {
+            DrawRectangle(SCREEN_WIDTH/2 - 98, 352 + i*60, 196, 36, MSPAINT_COLORS[3]); // Weiß
+        }
+        
+        // Button-Text
+        int textWidth = MeasureText(menuItems[i], 20);
+        DrawText(menuItems[i], SCREEN_WIDTH/2 - textWidth/2, 360 + i*60, 20, BLACK);
+        
+        // 3D-Effekt
+        DrawLine(SCREEN_WIDTH/2 - 100, 350 + i*60, SCREEN_WIDTH/2 + 100, 350 + i*60, MSPAINT_COLORS[0]); // Oben schwarz
+        DrawLine(SCREEN_WIDTH/2 - 100, 350 + i*60, SCREEN_WIDTH/2 - 100, 390 + i*60, MSPAINT_COLORS[0]); // Links schwarz
+        DrawLine(SCREEN_WIDTH/2 + 100, 350 + i*60, SCREEN_WIDTH/2 + 100, 390 + i*60, MSPAINT_COLORS[3]); // Rechts weiß
+        DrawLine(SCREEN_WIDTH/2 - 100, 390 + i*60, SCREEN_WIDTH/2 + 100, 390 + i*60, MSPAINT_COLORS[3]); // Unten weiß
+    }
 }
 
 void Game::DrawInGame() {
@@ -432,8 +441,8 @@ void Game::ResetGame() {
 }
 
 Vector2 Game::GetRandomEdgePosition() {
+    Vector2 pos = { 0, 0 }; // Explizite Initialisierung
     int side = rand() % 4; // 0=top, 1=right, 2=bottom, 3=left
-    Vector2 pos;
 
     switch (side) {
     case 0: // Top
@@ -453,6 +462,5 @@ Vector2 Game::GetRandomEdgePosition() {
         pos.y = static_cast<float>(rand() % SCREEN_HEIGHT);
         break;
     }
-
     return pos;
 }

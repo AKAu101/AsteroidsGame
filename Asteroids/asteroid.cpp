@@ -51,78 +51,52 @@ void Asteroid::Draw() const {
     if (!active) return;
 
     float radius = GetRadius();
-    int segments = 8;
+    int segments = 12; // Glatter aber noch pixeliger
 
-    // Color array for different asteroid colors - made darker for better contrast
+    // Helle MS Paint Farben (keine dunklen Töne)
     Color colors[6] = {
-        {200, 50, 50, 255},   // Dark Red
-        {50, 200, 50, 255},   // Dark Green  
-        {50, 50, 200, 255},   // Dark Blue
-        {200, 200, 50, 255},  // Dark Yellow
-        {200, 50, 200, 255},  // Dark Magenta
-        {50, 200, 200, 255}   // Dark Cyan
+        RED,      // Rot
+        GREEN,    // Grün
+        BLUE,     // Blau
+        YELLOW,   // Gelb
+        PURPLE,   // Lila
+        ORANGE    // Orange
     };
 
     Color asteroidColor = colors[colorIndex % 6];
 
-    // Draw filled asteroid with gradient effect
+    // Gefüllter Asteroid
     for (int i = 0; i < segments; i++) {
-        float angle1 = (i * 360.0f / segments + rotation) * WINKEL2GRAD;
-        float angle2 = ((i + 1) * 360.0f / segments + rotation) * WINKEL2GRAD;
+        float angle1 = (i * 360.0f / segments + rotation) * DEG2RAD;
+        float angle2 = ((i + 1) * 360.0f / segments + rotation) * DEG2RAD;
 
         Vector2 p1 = {
-            position.x + cos(angle1) * radius,
-            position.y + sin(angle1) * radius
+            position.x + cosf(angle1) * radius,
+            position.y + sinf(angle1) * radius
         };
         Vector2 p2 = {
-            position.x + cos(angle2) * radius,
-            position.y + sin(angle2) * radius
+            position.x + cosf(angle2) * radius,
+            position.y + sinf(angle2) * radius
         };
 
-        // Draw triangle from center to create filled effect
-        DrawTriangle(position, p1, p2, Color{
-            static_cast<unsigned char>(asteroidColor.r * 0.6f),
-            static_cast<unsigned char>(asteroidColor.g * 0.6f),
-            static_cast<unsigned char>(asteroidColor.b * 0.6f),
-            200
-            });
+        DrawTriangle(position, p1, p2, asteroidColor);
     }
 
-    // Draw simple colored outline for visibility
+    // Dicke schwarze Umrandung
     for (int i = 0; i < segments; i++) {
-        float angle1 = (i * 360.0f / segments + rotation) * WINKEL2GRAD;
-        float angle2 = ((i + 1) * 360.0f / segments + rotation) * WINKEL2GRAD;
+        float angle1 = (i * 360.0f / segments + rotation) * DEG2RAD;
+        float angle2 = ((i + 1) * 360.0f / segments + rotation) * DEG2RAD;
 
         Vector2 p1 = {
-            position.x + cos(angle1) * radius,
-            position.y + sin(angle1) * radius
+            position.x + cosf(angle1) * radius,
+            position.y + sinf(angle1) * radius
         };
         Vector2 p2 = {
-            position.x + cos(angle2) * radius,
-            position.y + sin(angle2) * radius
+            position.x + cosf(angle2) * radius,
+            position.y + sinf(angle2) * radius
         };
 
-        // Draw outline with brighter asteroid color
-        DrawLineV(p1, p2, asteroidColor);
-    }
-
-    // Add some surface details
-    if (size == LARGE) {
-        // Draw some craters/spots
-        DrawCircleV({ position.x + radius * 0.3f, position.y + radius * 0.2f }, 3,
-            Color{
-                static_cast<unsigned char>(asteroidColor.r * 0.4f),
-                static_cast<unsigned char>(asteroidColor.g * 0.4f),
-                static_cast<unsigned char>(asteroidColor.b * 0.4f),
-                255
-            });
-        DrawCircleV({ position.x - radius * 0.2f, position.y - radius * 0.4f }, 2,
-            Color{
-                static_cast<unsigned char>(asteroidColor.r * 0.4f),
-                static_cast<unsigned char>(asteroidColor.g * 0.4f),
-                static_cast<unsigned char>(asteroidColor.b * 0.4f),
-                255
-            });
+        DrawLineEx(p1, p2, 2.0f, BLACK);
     }
 }
 

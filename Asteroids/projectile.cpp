@@ -38,7 +38,24 @@ void Projectile::Update(float deltaTime) {
 
 void Projectile::Draw() const {
     if (!active) return;
-    DrawCircleV(position, 2, BLACK);
+
+    // Hochkantiges, schmales Rechteck (3 Pixel breit, 12 Pixel hoch)
+    Rectangle rect = {
+        position.x - 1.5f,  // Zentriert (1.5 Pixel auf jeder Seite)
+        position.y - 6.0f,   // 6 Pixel nach oben (halbe Höhe)
+        3.0f,               // Breite
+        12.0f               // Höhe
+    };
+
+    // Optional: Ausrichtung in Bewegungsrichtung
+    float angle = atan2f(velocity.y, velocity.x) * RAD2DEG + 90.0f; // +90° für Hochkant
+
+    DrawRectanglePro(
+        rect,
+        Vector2{ 1.5f, 6.0f },  // Pivotpunkt in der Mitte
+        angle,
+        BLACK
+    );
 }
 
 Rectangle Projectile::GetBounds() const {

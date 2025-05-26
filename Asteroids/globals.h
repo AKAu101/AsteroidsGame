@@ -23,8 +23,28 @@ static constexpr int SMALL_ASTEROID_POINTS = 100;
 static constexpr float POWERUP_SPAWN_RATE = 0.3f;
 static constexpr float POWERUP_LIFETIME = 10.0f;
 static constexpr int MAX_POWERUPS = 10;
+static constexpr float PROJECTILE_WIDTH = 8.0f;
+static constexpr float PROJECTILE_HEIGHT = 4.0f;
 
 static constexpr float WINKEL2GRAD = 0.01745329252f; // Degree to Radian conversion factor
 
+static const Color MSPAINT_COLORS[16] = {
+    {0, 0, 0, 255},       // Schwarz
+    {128, 128, 128, 255}, // Grau
+    {192, 192, 192, 255}, // Hellgrau
+    {255, 255, 255, 255}, // Weiß
+    {128, 0, 0, 255},     // Dunkelrot
+    {255, 0, 0, 255},     // Rot
+    {128, 128, 0, 255},   // Dunkelgelb
+    {255, 255, 0, 255},   // Gelb
+    {0, 128, 0, 255},     // Dunkelgrün
+    {0, 255, 0, 255},     // Grün
+    {0, 128, 128, 255},   // Dunkelcyan
+    {0, 255, 255, 255},   // Cyan
+    {0, 0, 128, 255},     // Dunkelblau
+    {0, 0, 255, 255},     // Blau
+    {128, 0, 128, 255},   // Dunkelmagenta
+    {255, 0, 255, 255}    // Magenta
+};
 
 #endif
