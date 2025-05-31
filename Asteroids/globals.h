@@ -37,8 +37,8 @@ static const Color MSPAINT_COLORS[16] = {
     {255, 0, 0, 255},     // Rot
     {128, 128, 0, 255},   // Dunkelgelb
     {255, 255, 0, 255},   // Gelb
-    {0, 128, 0, 255},     // Dunkelgrün
-    {0, 255, 0, 255},     // Grün
+    {0, 128, 0, 255},     // DunkelgrE
+    {0, 255, 0, 255},     // GrE
     {0, 128, 128, 255},   // Dunkelcyan
     {0, 255, 255, 255},   // Cyan
     {0, 0, 128, 255},     // Dunkelblau

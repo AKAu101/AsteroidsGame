@@ -21,8 +21,10 @@ private:
     Score gameScore;
     float projectileCooldown;
     float asteroidSpawnTimer;
+    int amountRapid;
     int menuSelection;
     bool gameRunning;
+    bool hasRapid;
 
 public:
     Game();

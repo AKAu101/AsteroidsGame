@@ -11,6 +11,7 @@ Game::Game() {
     menuSelection = 0;
     projectileCooldown = 0;
     asteroidSpawnTimer = 0;
+    amountRapid = 0;
     srand(static_cast<unsigned int>(time(nullptr)));
 }
 
@@ -187,7 +188,15 @@ void Game::FireProjectile() {
     for (auto& projectile : projectiles) {
         if (!projectile.IsActive()) {
             projectile.Fire(player.GetPosition(), player.GetRotation());
-            projectileCooldown = 0.2f;
+            if (hasRapid == true) {
+                projectileCooldown = 0.05f;
+                amountRapid -= 1;
+                if (amountRapid == 0) {
+                    hasRapid = false;
+                }
+            }  else {
+                projectileCooldown = 0.2f;      
+            }
             break;
         }
     }
@@ -366,7 +375,8 @@ void Game::CheckCollisions() {
                 player.AddLife();
                 break;
             case RAPID_FIRE:
-                // Implement rapid fire
+                hasRapid = true;
+                amountRapid = 10;
                 break;
             case SHIELD:
                 // Implement shield
