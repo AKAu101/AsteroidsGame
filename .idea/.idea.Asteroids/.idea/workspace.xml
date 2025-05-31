@@ -7,13 +7,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="62a7be67-dfd2-49f6-9bdc-8de21c219c6f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Asteroids/game.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/game.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/game.h" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/game.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/globals.h" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/globals.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/highscore.dat" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/highscore.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/projectile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/projectile.cpp" afterDir="false" />
-    </list>
+    <list default="true" id="62a7be67-dfd2-49f6-9bdc-8de21c219c6f" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -86,7 +80,7 @@
       <updated>1748696054541</updated>
       <workItem from="1748696055856" duration="516000" />
       <workItem from="1748696576230" duration="6061000" />
-      <workItem from="1748702690188" duration="950000" />
+      <workItem from="1748702690188" duration="1319000" />
     </task>
     <servers />
   </component>

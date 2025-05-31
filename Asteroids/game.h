@@ -27,6 +27,7 @@ private:
     bool gameRunning;
     bool hasRapid;
     Sound shootSound;
+    bool hasShield;
 
 public:
     Game();
@@ -44,6 +45,8 @@ private:
     void HandleInput(float deltaTime);
     void HandleGameInput(float deltaTime);
     void FireProjectile();
+    void SetItem(int type);
+    void UseItem();
     
     // PHASE 2: State Updates (kein Input)
     void UpdateMainMenu();
