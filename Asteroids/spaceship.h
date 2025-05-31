@@ -41,6 +41,8 @@ public:
     Vector2 GetPosition() const;
     float GetRotation() const;
     Vector2 GetVelocity() const;
+    void setInvulnerableTimer(float value);
+    void setIsInvulnerable(bool value);
     bool IsInvulnerable() const;
     bool IsThrusting() const;
     int GetLives() const;

@@ -25,6 +25,7 @@ private:
     int menuSelection;
     bool gameRunning;
     bool hasRapid;
+    bool hasShield;
 
 public:
     Game();

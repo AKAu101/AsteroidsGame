@@ -342,7 +342,14 @@ void Game::CheckCollisions() {
             if (asteroid.IsActive() &&
                 CheckCircleCollision(player.GetPosition(), 10,
                     asteroid.GetPosition(), asteroid.GetRadius())) {
-                player.LoseLife();
+                
+                if (!hasShield) {
+                    player.LoseLife();
+                } else {
+                    player.setIsInvulnerable(true);
+                    player.setInvulnerableTimer(3.0f); 
+                    hasShield = false;
+                }            
                 break;
             }
         }
@@ -379,7 +386,7 @@ void Game::CheckCollisions() {
                 amountRapid = 10;
                 break;
             case SHIELD:
-                // Implement shield
+                hasShield = true;
                 break;
             }
             powerup.Collect();
