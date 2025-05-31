@@ -21,6 +21,7 @@ private:
     Score gameScore;
     float projectileCooldown;
     float asteroidSpawnTimer;
+    int currentItem;    //Wertebreich 0 - 3
     int amountRapid;
     int menuSelection;
     bool gameRunning;
@@ -40,6 +41,8 @@ private:
     void HandleInput(float deltaTime);
     void HandleGameInput(float deltaTime);
     void FireProjectile();
+    void SetItem(int type);
+    void UseItem();
 
     // PHASE 2: State Updates (kein Input)
     void UpdateMainMenu();

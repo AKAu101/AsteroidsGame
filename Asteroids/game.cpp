@@ -12,6 +12,7 @@ Game::Game() {
     projectileCooldown = 0;
     asteroidSpawnTimer = 0;
     amountRapid = 0;
+    currentItem = 0;
     srand(static_cast<unsigned int>(time(nullptr)));
 }
 
@@ -95,6 +96,11 @@ void Game::HandleGameInput(float deltaTime) {
     // Shooting
     if (IsKeyDown(KEY_SPACE) && projectileCooldown <= 0) {
         FireProjectile();
+    }
+
+    // Item usage
+    if (IsKeyDown(KEY_LEFT_SHIFT)) {
+        UseItem();
     }
 }
 
@@ -200,6 +206,28 @@ void Game::FireProjectile() {
             break;
         }
     }
+}
+
+void Game::SetItem(int type) {
+    if (currentItem == 0) {
+        currentItem = type;
+        printf("Equiped Item: %i \n", type);
+    }
+}
+
+void Game::UseItem() {
+    switch (currentItem) {
+    case 0:
+        break;
+    case 1:
+        hasRapid = true;
+        amountRapid = 10;
+        break;
+    case 2:
+        hasShield = true;
+        break;
+    }
+    currentItem = 0;
 }
 
 void Game::UpdateGameOver() {
@@ -382,11 +410,10 @@ void Game::CheckCollisions() {
                 player.AddLife();
                 break;
             case RAPID_FIRE:
-                hasRapid = true;
-                amountRapid = 10;
+                SetItem(1);
                 break;
             case SHIELD:
-                hasShield = true;
+                SetItem(2);
                 break;
             }
             powerup.Collect();
