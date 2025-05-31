@@ -4,8 +4,8 @@
 #include <cmath>
 
 // Mathematische Konstanten
-constexpr float DEG120 = 2.0943951f; // 120° in Rad
-constexpr float DEG240 = 4.1887902f; // 240° in Rad
+constexpr float DEG120 = 2.0943951f; // 120ï¿½ in Rad
+constexpr float DEG240 = 4.1887902f; // 240ï¿½ in Rad
 
 Spaceship::Spaceship() :
     triangleSize(15.0f),
@@ -56,7 +56,7 @@ void Spaceship::UpdateTriangleGeometry() {
     const float cosRot = cosf(rad);
     const float sinRot = sinf(rad);
 
-    // Spitze (vorwärts)
+    // Spitze (vorwï¿½rts)
     trianglePoints[0] = {
         position.x + cosRot * triangleSize,
         position.y + sinRot * triangleSize
@@ -78,7 +78,7 @@ void Spaceship::UpdateTriangleGeometry() {
 void Spaceship::Draw() const {
     if (invulnerable && ((int)(invulnerabilityTimer * 10.0f) % 2)) return;
 
-    // Raumschiffkörper mit leichtem Wobble
+    // RaumschiffkÃ¶rper zeichnen (wie zuvor)
     for (int i = 0; i < 3; i++) {
         int next = (i + 1) % 3;
         Vector2 p1 = {
@@ -92,15 +92,50 @@ void Spaceship::Draw() const {
         DrawLineV(p1, p2, BLACK);
     }
 
-    // Schubeffekt
+    // Verbesserter Schubeffekt mit Partikeln
     if (isThrusting) {
+        // Mitte der hinteren Kante des Raumschiffs
         Vector2 thrustBase = {
             (trianglePoints[1].x + trianglePoints[2].x) * 0.5f,
             (trianglePoints[1].y + trianglePoints[2].y) * 0.5f
         };
-        DrawTriangle(trianglePoints[1], trianglePoints[2],
-            Vector2{ thrustBase.x, thrustBase.y + 10.0f },
-            RED);
+        
+        // Richtungsvektor (nach hinten weg vom Raumschiff)
+        Vector2 thrustDirection = {
+            position.x - trianglePoints[0].x,  // Umgekehrte Flugrichtung
+            position.y - trianglePoints[0].y
+        };
+        
+        // Normalisieren
+        float length = sqrtf(thrustDirection.x * thrustDirection.x + thrustDirection.y * thrustDirection.y);
+        if (length > 0) {
+            thrustDirection.x /= length;
+            thrustDirection.y /= length;
+        }
+        
+        // Partikel erzeugen
+        for (int i = 0; i < GetRandomValue(4, 6); i++) {
+            // Partikelposition:
+            // - Start an der hinteren Kante (thrustBase)
+            // - Plus zufÃ¤lliger seitlicher Offset (-5 bis +5 Pixel)
+            // - Plus Hauptrichtung * zufÃ¤llige Distanz (10-25 Pixel nach hinten)
+            Vector2 particlePos = {
+                thrustBase.x + GetRandomValue(-5, 5) + thrustDirection.x * GetRandomValue(10, 25),
+                thrustBase.y + GetRandomValue(-5, 5) + thrustDirection.y * GetRandomValue(10, 25)
+            };
+            
+            // ZufÃ¤llige Eigenschaften
+            float size = GetRandomValue(2, 6);
+            Color particleColor;
+            int colorRand = GetRandomValue(0, 100);
+            if (colorRand < 60) particleColor = ORANGE;
+            else if (colorRand < 90) particleColor = RED;
+            else particleColor = YELLOW;
+            
+            // Partikel zeichnen mit leichtem GlÃ¼heffekt
+            DrawCircleV(particlePos, size + 1, Fade(particleColor, 0.4f));  // Glow
+            DrawCircleV(particlePos, size, particleColor);  // Hauptpartikel
+        }
     }
 }
 

@@ -3,6 +3,17 @@
 #include <cmath>
 #include <cstdlib>
 
+// Define asteroid colors globally to avoid recreating the array in each Draw() call
+static const Color ASTEROID_COLORS[] = {
+    RED,      // Rot
+    GREEN,    // GrÃ¼n
+    BLUE,     // Blau
+    YELLOW,   // Gelb
+    PURPLE,   // Lila
+    ORANGE    // Orange
+};
+static const int NUM_ASTEROID_COLORS = sizeof(ASTEROID_COLORS) / sizeof(ASTEROID_COLORS[0]);
+
 Asteroid::Asteroid() {
     active = false;
     position = { 0.0f, 0.0f };
@@ -10,7 +21,7 @@ Asteroid::Asteroid() {
     size = LARGE;
     rotation = 0.0f;
     rotationSpeed = 0.0f;
-    colorIndex = 0; // Initialize color index
+    colorIndex = 0;
 }
 
 void Asteroid::Spawn(Vector2 pos, AsteroidSize asteroidSize) {
@@ -27,8 +38,7 @@ void Asteroid::Spawn(Vector2 pos, AsteroidSize asteroidSize) {
     rotationSpeed = (rand() % 100 - 50) / 10.0f;
 
     // Assign random color index
-    colorIndex = rand() % 6; // 6 different colors
-
+    colorIndex = rand() % NUM_ASTEROID_COLORS;
     active = true;
 }
 
@@ -51,38 +61,15 @@ void Asteroid::Draw() const {
     if (!active) return;
 
     float radius = GetRadius();
-    int segments = 12; // Glatter aber noch pixeliger
+    int segments = 12;
+    
+    // WÃ¤hle die Farbe aus der globalen Palette
+    Color asteroidColor = ASTEROID_COLORS[colorIndex];
 
-    // Helle MS Paint Farben (keine dunklen Töne)
-    Color colors[6] = {
-        RED,      // Rot
-        GREEN,    // Grün
-        BLUE,     // Blau
-        YELLOW,   // Gelb
-        PURPLE,   // Lila
-        ORANGE    // Orange
-    };
+    // 1. Zuerst den gefÃ¼llten Asteroiden zeichnen
+    DrawPoly(position, segments, radius, rotation, asteroidColor);
 
-    Color asteroidColor = colors[colorIndex % 6];
-
-    // Gefüllter Asteroid
-    for (int i = 0; i < segments; i++) {
-        float angle1 = (i * 360.0f / segments + rotation) * DEG2RAD;
-        float angle2 = ((i + 1) * 360.0f / segments + rotation) * DEG2RAD;
-
-        Vector2 p1 = {
-            position.x + cosf(angle1) * radius,
-            position.y + sinf(angle1) * radius
-        };
-        Vector2 p2 = {
-            position.x + cosf(angle2) * radius,
-            position.y + sinf(angle2) * radius
-        };
-
-        DrawTriangle(position, p1, p2, asteroidColor);
-    }
-
-    // Dicke schwarze Umrandung
+    // 2. Dann die Umrandung zeichnen
     for (int i = 0; i < segments; i++) {
         float angle1 = (i * 360.0f / segments + rotation) * DEG2RAD;
         float angle2 = ((i + 1) * 360.0f / segments + rotation) * DEG2RAD;
@@ -99,7 +86,6 @@ void Asteroid::Draw() const {
         DrawLineEx(p1, p2, 2.0f, BLACK);
     }
 }
-
 Rectangle Asteroid::GetBounds() const {
     float radius = GetRadius();
     return { position.x - radius, position.y - radius, radius * 2, radius * 2 };
