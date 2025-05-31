@@ -1,4 +1,4 @@
-// game.h - Header für Game-Klasse
+// game.h - Header fE Game-Klasse
 #ifndef GAME_H
 #define GAME_H
 
@@ -51,7 +51,7 @@ private:
     void HandleAsteroidDestruction(int asteroidIndex);
 
     // PHASE 4: Drawing (const methods)
-    void DrawCheckeredBackground();  // Neue Methode für karierten Hintergrund
+    void DrawCheckeredBackground();  // Neue Methode fE karierten Hintergrund
     void DrawMainMenu();
     void DrawInGame();
     void DrawGameOver();

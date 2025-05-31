@@ -48,7 +48,7 @@ void Projectile::Draw() const {
     };
 
     // Optional: Ausrichtung in Bewegungsrichtung
-    float angle = atan2f(velocity.y, velocity.x) * RAD2DEG + 90.0f; // +90∞ f¸r Hochkant
+    float angle = atan2f(velocity.y, velocity.x) * RAD2DEG + 90.0f; // +90∞ fÅE Hochkant
 
     DrawRectanglePro(
         rect,

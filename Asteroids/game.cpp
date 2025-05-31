@@ -56,7 +56,7 @@ void Game::Update() {
 // PHASE 1: Zentrales Input-Handling
 void Game::HandleInput(float deltaTime) {
     // Globale Navigation
-    if (IsKeyPressed(KEY_ESCAPE)) {
+    if (IsKeyPressed(KEY_TAB)) {
         if (currentState == IN_GAME) {
             currentState = MAIN_MENU;
         }
@@ -92,7 +92,7 @@ void Game::HandleGameInput(float deltaTime) {
     }
 
     // Shooting
-    if (IsKeyPressed(KEY_SPACE) && projectileCooldown <= 0) {
+    if (IsKeyDown(KEY_SPACE) && projectileCooldown <= 0) {
         FireProjectile();
     }
 }
@@ -223,7 +223,7 @@ void Game::Draw() {
         break;
     case OPTIONS:
         DrawText("OPTIONS MENU", SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2, 20, WHITE);
-        DrawText("Press ESC to return", SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 + 50, 10, WHITE);
+        DrawText("Press TAB to return", SCREEN_WIDTH / 2 - 80, SCREEN_HEIGHT / 2 + 50, 10, WHITE);
         break;
     }
 
