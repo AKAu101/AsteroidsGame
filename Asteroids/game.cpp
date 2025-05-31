@@ -5,6 +5,28 @@
 #include <cmath>
 #include <string>
 
+void Game::InitGameSounds() {
+    // Raylib Audio System initialisieren
+    InitAudioDevice();
+    
+    // Sound laden
+    this->shootSound = LoadSound("Sounds/shoot.wav");
+    
+    // Prüfen ob Sound erfolgreich geladen wurde
+    if (!IsAudioDeviceReady()) {
+        // Fallback: Warnung ausgeben wenn Audio nicht verfügbar
+        // (In einer echten Anwendung würden Sie hier Logging verwenden)
+    }
+}
+
+void Game::UnloadGameSounds() {
+    // Sound entladen
+    UnloadSound(this->shootSound);
+    
+    // Audio Device schließen
+    CloseAudioDevice();
+}
+
 Game::Game() {
     gameRunning = true;
     currentState = MAIN_MENU;
@@ -12,11 +34,14 @@ Game::Game() {
     projectileCooldown = 0;
     asteroidSpawnTimer = 0;
     amountRapid = 0;
+    hasRapid = false;
     srand(static_cast<unsigned int>(time(nullptr)));
+    InitGameSounds();
 }
 
 Game::~Game() {
     gameScore.SaveHighScore();
+    UnloadGameSounds();
 }
 
 void Game::Initialize() {
@@ -99,10 +124,10 @@ void Game::HandleGameInput(float deltaTime) {
 }
 
 void Game::UpdateMainMenu() {
-    if (IsKeyPressed(KEY_UP)) {
+    if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
         menuSelection = (menuSelection - 1 + 3) % 3;
     }
-    if (IsKeyPressed(KEY_DOWN)) {
+    if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
         menuSelection = (menuSelection + 1) % 3;
     }
     if (IsKeyPressed(KEY_ENTER)) {
@@ -187,14 +212,22 @@ void Game::CheckGameState() {
 void Game::FireProjectile() {
     for (auto& projectile : projectiles) {
         if (!projectile.IsActive()) {
+            // Projektil abfeuern
             projectile.Fire(player.GetPosition(), player.GetRotation());
+            
+            // Sound abspielen (nur wenn Audio Device bereit ist)
+            if (IsAudioDeviceReady()) {
+                PlaySound(shootSound);
+            }
+            
+            // Cooldown setzen
             if (hasRapid == true) {
                 projectileCooldown = 0.05f;
                 amountRapid -= 1;
                 if (amountRapid == 0) {
                     hasRapid = false;
                 }
-            }  else {
+            } else {
                 projectileCooldown = 0.2f;      
             }
             break;
@@ -238,6 +271,7 @@ void Game::Draw() {
 
     EndDrawing();
 }
+
 void Game::DrawCheckeredBackground() {
     // MS Paint default background
     ClearBackground(WHITE); // White
@@ -250,7 +284,6 @@ void Game::DrawCheckeredBackground() {
         DrawLine(0, y, SCREEN_WIDTH, y, LIGHTGRAY); // Silver lines
     }
 }
-
 
 void Game::DrawMainMenu() {
     // MS Paint-ähnlicher Hintergrund

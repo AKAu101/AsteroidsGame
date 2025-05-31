@@ -42,13 +42,13 @@ void Projectile::Draw() const {
     // Hochkantiges, schmales Rechteck (3 Pixel breit, 12 Pixel hoch)
     Rectangle rect = {
         position.x - 1.5f,  // Zentriert (1.5 Pixel auf jeder Seite)
-        position.y - 6.0f,   // 6 Pixel nach oben (halbe Hˆhe)
+        position.y - 6.0f,   // 6 Pixel nach oben (halbe HÔøΩhe)
         3.0f,               // Breite
-        12.0f               // Hˆhe
+        12.0f               // HÔøΩhe
     };
 
     // Optional: Ausrichtung in Bewegungsrichtung
-    float angle = atan2f(velocity.y, velocity.x) * RAD2DEG + 90.0f; // +90∞ fÅE Hochkant
+    float angle = atan2f(velocity.y, velocity.x) * RAD2DEG + 90.0f; // +90ÔøΩ fÔøΩE Hochkant
 
     DrawRectanglePro(
         rect,

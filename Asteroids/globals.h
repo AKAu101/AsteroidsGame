@@ -1,5 +1,6 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
+#include "raylib.h"
 
 // globals.h - Gemeinsame Konstanten
 static constexpr int SCREEN_WIDTH = 1200;
@@ -32,13 +33,13 @@ static const Color MSPAINT_COLORS[16] = {
     {0, 0, 0, 255},       // Schwarz
     {128, 128, 128, 255}, // Grau
     {192, 192, 192, 255}, // Hellgrau
-    {255, 255, 255, 255}, // Weiﬂ
+    {255, 255, 255, 255}, // WeiÔøΩ
     {128, 0, 0, 255},     // Dunkelrot
     {255, 0, 0, 255},     // Rot
     {128, 128, 0, 255},   // Dunkelgelb
     {255, 255, 0, 255},   // Gelb
-    {0, 128, 0, 255},     // DunkelgrÅE
-    {0, 255, 0, 255},     // GrÅE
+    {0, 128, 0, 255},     // DunkelgrÔøΩE
+    {0, 255, 0, 255},     // GrÔøΩE
     {0, 128, 128, 255},   // Dunkelcyan
     {0, 255, 255, 255},   // Cyan
     {0, 0, 128, 255},     // Dunkelblau

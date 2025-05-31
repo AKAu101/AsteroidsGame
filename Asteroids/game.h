@@ -1,4 +1,4 @@
-// game.h - Header fÅE Game-Klasse
+// game.h - Header fÔøΩE Game-Klasse
 #ifndef GAME_H
 #define GAME_H
 
@@ -25,6 +25,7 @@ private:
     int menuSelection;
     bool gameRunning;
     bool hasRapid;
+    Sound shootSound;
 
 public:
     Game();
@@ -35,11 +36,14 @@ public:
     bool ShouldClose() const { return !gameRunning; }
 
 private:
+    void InitGameSounds();
+    void UnloadGameSounds();
+    
     // PHASE 1: Input Handling (zentralisiert)
     void HandleInput(float deltaTime);
     void HandleGameInput(float deltaTime);
     void FireProjectile();
-
+    
     // PHASE 2: State Updates (kein Input)
     void UpdateMainMenu();
     void UpdateInGame(float deltaTime);
@@ -53,7 +57,7 @@ private:
     void HandleAsteroidDestruction(int asteroidIndex);
 
     // PHASE 4: Drawing (const methods)
-    void DrawCheckeredBackground();  // Neue Methode fÅE karierten Hintergrund
+    void DrawCheckeredBackground();  // Neue Methode fÔøΩE karierten Hintergrund
     void DrawMainMenu();
     void DrawInGame();
     void DrawGameOver();
