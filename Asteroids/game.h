@@ -21,6 +21,7 @@ private:
     Score gameScore;
     float projectileCooldown;
     float asteroidSpawnTimer;
+    int currentItem;    //Wertebreich 0 - 3
     int amountRapid;
     int menuSelection;
     bool gameRunning;

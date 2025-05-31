@@ -175,10 +175,13 @@ void Spaceship::Rotate(float direction, float deltaTime) {
 Vector2 Spaceship::GetPosition() const { return position; }
 float Spaceship::GetRotation() const { return rotation; }
 Vector2 Spaceship::GetVelocity() const { return velocity; }
+void Spaceship::setInvulnerableTimer(float value) { invulnerabilityTimer = 3.0f; }
+void Spaceship::setIsInvulnerable(bool value) { invulnerable = value; }
 bool Spaceship::IsInvulnerable() const { return invulnerable; }
 bool Spaceship::IsThrusting() const { return isThrusting; }
 int Spaceship::GetLives() const { return lives; }
 void Spaceship::AddLife() { lives++; }
+
 
 Rectangle Spaceship::GetBounds() const {
     return { position.x - triangleSize, position.y - triangleSize,
