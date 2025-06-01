@@ -2,9 +2,6 @@
 #include "gamestate.h"
 
 int main() {
-    // Initialize game state manager
-    InitializeGameState();
-
     // Create game instance
     Game asteroids;
 

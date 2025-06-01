@@ -128,24 +128,33 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="asteroid.cpp" />
+    <ClCompile Include="collisionSystem.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="gamestate.cpp" />
+    <ClCompile Include="inputHandler.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="objectManager.cpp" />
     <ClCompile Include="powerup.cpp" />
     <ClCompile Include="projectile.cpp" />
     <ClCompile Include="score.cpp" />
     <ClCompile Include="spaceship.cpp" />
+    <ClCompile Include="test.cpp" />
+    <ClCompile Include="uiRenderer.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asteroid.h" />
+    <ClInclude Include="collisionSystem.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="gamestate.h" />
     <ClInclude Include="globals.h" />
+    <ClInclude Include="inputHandler.h" />
+    <ClInclude Include="objectManager.h" />
     <ClInclude Include="powerup.h" />
     <ClInclude Include="projectile.h" />
     <ClInclude Include="score.h" />
     <ClInclude Include="spaceship.h" />
+    <ClInclude Include="uiRenderer.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
