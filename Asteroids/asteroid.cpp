@@ -23,16 +23,27 @@ void Asteroid::Spawn(Vector2 pos, AsteroidSize asteroidSize) {
     size = asteroidSize;
     active = true;
 
-	// Set random momvement
-    float speed = ASTEROID_MIN_SPEED + (rand() % static_cast<int>(ASTEROID_MAX_SPEED - ASTEROID_MIN_SPEED));
-    float angle = (rand() % 360) * WINKEL2GRAD;
+    // Progressive Geschwindigkeit basierend auf globalem Score
+    float baseMinSpeed = ASTEROID_MIN_SPEED;
+    float baseMaxSpeed = ASTEROID_MAX_SPEED;
 
-    velocity.x = cos(angle) * speed;
-    velocity.y = sin(angle) * speed;
+    // Geschwindigkeits-Multiplikator basierend auf globaler Score-Variable
+    float speedMultiplier = 1.0f + (g_currentScore / 5000.0f); // Alle 5000 Punkte 100% schneller
+    speedMultiplier = SafeMin(speedMultiplier, 3.0f); // Maximum 3x so schnell
 
-	// Set random rotation
+    float minSpeed = baseMinSpeed * speedMultiplier;
+    float maxSpeed = baseMaxSpeed * speedMultiplier;
+
+    // Set random movement mit progressiver Geschwindigkeit
+    float speed = minSpeed + (float)(rand() % (int)(maxSpeed - minSpeed + 1));
+    float angle = (float)(rand() % 360) * WINKEL2GRAD;
+
+    velocity.x = cosf(angle) * speed;
+    velocity.y = sinf(angle) * speed;
+
+    // Set random rotation (auch schneller)
     rotation = 0.0f;
-    rotationSpeed = (rand() % 100 - 50) / 10.0f;
+    rotationSpeed = ((float)(rand() % 100 - 50) / 10.0f) * speedMultiplier;
 
     // Assign random color
     colorIndex = rand() % NUM_ASTEROID_COLORS;
@@ -40,10 +51,10 @@ void Asteroid::Spawn(Vector2 pos, AsteroidSize asteroidSize) {
 
 void Asteroid::Update(float deltaTime) {
     if (!active) return;
-	// Update position
+    // Update position
     position.x += velocity.x * deltaTime;
     position.y += velocity.y * deltaTime;
-	// Update rotation
+    // Update rotation
     rotation += rotationSpeed * deltaTime;
 
     // Screen wrapping
@@ -59,7 +70,7 @@ void Asteroid::Draw() const {
 
     float radius = GetRadius();
     int segments = 12;
-    
+
     // 1. Gefüllten Körper zeichnen
     DrawPoly(position, segments, radius, rotation, ASTEROID_COLORS[colorIndex]);
 
@@ -89,9 +100,9 @@ int Asteroid::GetPoints() const {
 
 float Asteroid::GetRadius() const {
     switch (size) {
-    case LARGE: return static_cast<float>(LARGE_ASTEROID_SIZE);
-    case MEDIUM: return static_cast<float>(MEDIUM_ASTEROID_SIZE);
-    case SMALL: return static_cast<float>(SMALL_ASTEROID_SIZE);
+    case LARGE: return (float)LARGE_ASTEROID_SIZE;
+    case MEDIUM: return (float)MEDIUM_ASTEROID_SIZE;
+    case SMALL: return (float)SMALL_ASTEROID_SIZE;
     }
     return 0.0f;
 }

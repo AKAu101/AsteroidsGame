@@ -12,9 +12,10 @@ private:
     Score& gameScore;
     Spaceship& player;
     ObjectManager& objectManager;
+    int& currentItem; // Referenz auf currentItem aus Game
 
 public:
-    UIRenderer(GameStateManager& stateMgr, Score& score, Spaceship& ship, ObjectManager& objMgr);
+    UIRenderer(GameStateManager& stateMgr, Score& score, Spaceship& ship, ObjectManager& objMgr, int& currentItemRef);
 
     void DrawCurrentState() const;
 
@@ -24,6 +25,9 @@ private:
     void DrawInGame() const;
     void DrawGameOver() const;
     void DrawGameObjects() const;
+    void DrawGameUI() const;
+    void DrawOptionsMenu() const;
+    void DrawItemSlot() const;
 };
 
 #endif

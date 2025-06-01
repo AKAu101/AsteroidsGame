@@ -1,40 +1,47 @@
+// objectmanager.h - Erweitert um PowerUps
 #ifndef OBJECTMANAGER_H
 #define OBJECTMANAGER_H
 
-#include "asteroid.h"
-#include "projectile.h"
-#include "powerup.h"
-#include "spaceship.h"
 #include <vector>
+#include "spaceship.h"
+#include "projectile.h"
+#include "asteroid.h"
+#include "powerup.h"
 
 class ObjectManager {
 private:
-    std::vector<Asteroid> asteroids;
-    std::vector<Projectile> projectiles;
-    std::vector<PowerUp> powerups;
     Spaceship& player;
+    std::vector<Projectile> projectiles;
+    std::vector<Asteroid> asteroids;
+    std::vector<PowerUp> powerups;
+
+    float powerupSpawnTimer;
+    const float POWERUP_SPAWN_INTERVAL = 15.0f; // Alle 15 Sekunden
 
 public:
-    ObjectManager(Spaceship& player);
-
-    void SpawnAsteroids(int count);
-    void SpawnAsteroid(Vector2 position, AsteroidSize size);
-    void SpawnPowerUp(Vector2 position);
-    void FireProjectile(Vector2 position, float rotation);
+    ObjectManager(Spaceship& ship);
 
     void UpdateObjects(float deltaTime);
     void ResetObjects();
 
-    Vector2 GetRandomEdgePosition() const;
+    // Spawning
+    void SpawnAsteroids(int count);
+    void SpawnAsteroid(Vector2 position, AsteroidSize size);
+    void FireProjectile(Vector2 position, float rotation);
+    void SpawnPowerUp(Vector2 position, PowerUpType type);
+    void CheckPowerUpSpawning(float deltaTime);
+    Vector2 GetRandomEdgePosition();
 
-    // Single declaration of each getter function
+    // Getters
     Spaceship& GetPlayer() { return player; }
-    const std::vector<Asteroid>& GetAsteroids() const { return asteroids; }
-    std::vector<Asteroid>& GetAsteroids() { return asteroids; }
     const std::vector<Projectile>& GetProjectiles() const { return projectiles; }
-    std::vector<Projectile>& GetProjectiles() { return projectiles; }
-    const std::vector<PowerUp>& GetPowerups() const { return powerups; }
-    std::vector<PowerUp>& GetPowerups() { return powerups; }
+    const std::vector<Asteroid>& GetAsteroids() const { return asteroids; }
+    const std::vector<PowerUp>& GetPowerUps() const { return powerups; }
+
+    // Mutable Getters (falls benötigt)
+    std::vector<Projectile>& GetProjectilesMutable() { return projectiles; }
+    std::vector<Asteroid>& GetAsteroidsMutable() { return asteroids; }
+    std::vector<PowerUp>& GetPowerUpsMutable() { return powerups; }
 };
 
 #endif

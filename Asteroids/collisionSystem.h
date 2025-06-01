@@ -3,21 +3,22 @@
 
 #include "objectmanager.h"
 #include "score.h"
+#include "raylib.h"
 
 class CollisionSystem {
 private:
     ObjectManager& objectManager;
     Score& gameScore;
 
+    // Private Hilfsmethoden
+    void CheckProjectileAsteroidCollisions();
+    void CheckPlayerAsteroidCollisions(bool hasShield, bool isInvulnerable);
+
 public:
-    CollisionSystem(ObjectManager& objManager, Score& score);
+    CollisionSystem(ObjectManager& objMgr, Score& score);
 
-    void CheckCollisions(bool& hasShield, bool isInvulnerable);
-    void HandleAsteroidDestruction(int asteroidIndex);
-
-private:
-    bool CheckCircleCollision(Vector2 pos1, float radius1,
-        Vector2 pos2, float radius2) const;
+    // Hauptmethode - Signatur muss mit game.cpp übereinstimmen
+    void CheckCollisions(bool hasShield, bool isInvulnerable);
 };
 
 #endif

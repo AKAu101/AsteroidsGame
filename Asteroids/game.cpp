@@ -1,5 +1,6 @@
 ﻿#include "game.h"
 #include "globals.h"
+#include <iostream> // Für Debug-Ausgaben
 
 Game::Game() :
     projectileCooldown(0),
@@ -15,7 +16,7 @@ Game::Game() :
     collisionSystem(objectManager, gameScore),
     inputHandler(*this, stateManager, objectManager, projectileCooldown,
         currentItem, hasRapid, amountRapid, hasShield),
-    uiRenderer(stateManager, gameScore, player, objectManager) {
+    uiRenderer(stateManager, gameScore, player, objectManager, currentItem) {
     InitGameSounds();
 }
 
@@ -50,6 +51,78 @@ void Game::UpdateInGame(float deltaTime) {
     collisionSystem.CheckCollisions(hasShield, isInvulnerable);
     HandleSpawning(deltaTime);
     CheckGameState();
+    CheckPowerUpCollisions(); // Diese Methode prüfen wir
+
+    // DEBUG: Item-Status anzeigen
+    static float debugTimer = 0;
+    debugTimer += deltaTime;
+    if (debugTimer > 1.0f) {
+        if (currentItem > 0) {
+            const char* itemNames[] = { "NONE", "RAPID_FIRE", "SHIELD", "EXTRA_LIFE" };
+            printf("Current Item: %s (%d)\n", itemNames[currentItem], currentItem);
+        }
+        debugTimer = 0;
+    }
+}
+
+void Game::CheckPowerUpCollisions() {
+    Rectangle playerBounds = player.GetBounds();
+
+    // Debug: Spieler-Position ausgeben
+    static float debugTimer2 = 0;
+    debugTimer2 += GetFrameTime();
+    if (debugTimer2 > 2.0f) {
+        printf("Player pos: %.1f, %.1f | PowerUps: %zu\n",
+            playerBounds.x, playerBounds.y, objectManager.GetPowerUps().size());
+        debugTimer2 = 0;
+    }
+
+    // Prüfe alle PowerUps
+    auto& powerups = const_cast<std::vector<PowerUp>&>(objectManager.GetPowerUps());
+
+    for (auto& powerup : powerups) {
+        if (powerup.IsActive()) {
+            Rectangle powerupBounds = powerup.GetBounds();
+
+            // Debug: PowerUp-Position ausgeben
+            printf("PowerUp active at: %.1f, %.1f (size: %.1fx%.1f)\n",
+                powerupBounds.x, powerupBounds.y, powerupBounds.width, powerupBounds.height);
+
+            if (CheckCollisionRecs(playerBounds, powerupBounds)) {
+                printf("COLLISION DETECTED! PowerUp Type: %d\n", (int)powerup.GetType());
+
+                // PowerUp aufsammeln
+                PowerUpType type = powerup.GetType();
+                powerup.Collect(); // PowerUp deaktivieren
+
+                // Item basierend auf Typ setzen
+                switch (type) {
+                case EXTRA_LIFE:
+                    printf("Collected EXTRA_LIFE - adding life immediately\n");
+                    player.AddLife();
+                    currentItem = 0; // Sofort verwenden, nicht speichern
+                    break;
+
+                case RAPID_FIRE:
+                    printf("Collected RAPID_FIRE - stored as item\n");
+                    currentItem = 1; // Als Item speichern
+                    break;
+
+                case SHIELD:
+                    printf("Collected SHIELD - stored as item\n");
+                    currentItem = 2; // Als Item speichern
+                    break;
+
+                default:
+                    printf("Unknown PowerUp type: %d\n", (int)type);
+                    break;
+                }
+
+                printf("currentItem is now: %d\n", currentItem);
+                break; // Nur ein PowerUp pro Frame aufsammeln
+            }
+        }
+    }
 }
 
 void Game::Draw() {
@@ -74,7 +147,13 @@ void Game::UpdateTimers(float deltaTime) {
 }
 
 void Game::HandleSpawning(float deltaTime) {
-    if (asteroidSpawnTimer > 10.0f) {
+    // Progressiver Spawn-Timer basierend auf Score
+    float baseSpawnTime = 10.0f;
+    float minSpawnTime = 3.0f;
+    float scoreReduction = gameScore.GetScore() / 1000.0f; // Pro 1000 Punkte wird es schneller
+    float currentSpawnTime = SafeMax(minSpawnTime, baseSpawnTime - scoreReduction);
+
+    if (asteroidSpawnTimer > currentSpawnTime) {
         objectManager.SpawnAsteroid(objectManager.GetRandomEdgePosition(), LARGE);
         asteroidSpawnTimer = 0;
     }
@@ -90,7 +169,13 @@ void Game::CheckGameState() {
     }
 
     if (!asteroidsActive) {
-        objectManager.SpawnAsteroids(4 + gameScore.GetLevel());
+        // Spawne mehr Asteroiden basierend auf Score statt Level
+        int baseAsteroids = 4;
+        int bonusAsteroids = gameScore.GetScore() / 2000; // Alle 2000 Punkte ein Asteroid mehr
+        int maxAsteroids = 10; // Maximal 10 Asteroiden gleichzeitig
+        int asteroidsToSpawn = (int)SafeMin((float)maxAsteroids, (float)(baseAsteroids + bonusAsteroids));
+
+        objectManager.SpawnAsteroids(asteroidsToSpawn);
     }
 
     if (player.GetLives() <= 0) {
@@ -106,6 +191,6 @@ void Game::ResetGame() {
     asteroidSpawnTimer = 0;
     hasRapid = false;
     hasShield = false;
-    currentItem = 0;
+    currentItem = 0; // Item zurücksetzen
     objectManager.SpawnAsteroids(4);
 }

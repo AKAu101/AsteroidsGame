@@ -30,7 +30,7 @@ private:
     ObjectManager objectManager;
     CollisionSystem collisionSystem;
     InputHandler inputHandler;
-    UIRenderer uiRenderer; 
+    UIRenderer uiRenderer;
 
 public:
     Game();
@@ -38,6 +38,17 @@ public:
     void Initialize();
     void Update();
     void Draw();
+    bool ShouldClose()
+    {
+        if (gameRunning == false)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
     bool IsGameRunning() const { return gameRunning; }
     void SetGameRunning(bool running) { gameRunning = running; }
 
@@ -47,8 +58,9 @@ private:
     void UpdateTimers(float deltaTime);
     void HandleSpawning(float deltaTime);
     void CheckGameState();
-    void UpdateInGame(float deltaTime);  // Added this declaration
+    void UpdateInGame(float deltaTime);
     void ResetGame();
+    void CheckPowerUpCollisions(); // Neue Deklaration
 };
 
 #endif

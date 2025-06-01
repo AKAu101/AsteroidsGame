@@ -18,6 +18,11 @@ private:
     float invulnerabilityTimer;
     float thrustCooldown;
 
+    // Schild-Variablen
+    bool shieldActive;
+    float shieldTimer;
+    float shieldAnimationTimer;
+
     // Dreiecksgeometrie
     Vector2 trianglePoints[3]; // 0=Spitze, 1=Links, 2=Rechts
 
@@ -44,9 +49,16 @@ public:
     void setInvulnerableTimer(float value);
     void setIsInvulnerable(bool value);
     bool IsInvulnerable() const;
+    float GetInvulnerabilityTime() const;  // Neue Methode
     bool IsThrusting() const;
     int GetLives() const;
     Rectangle GetBounds() const;
+
+    // Schild-Methoden
+    void ActivateShield();
+    void DeactivateShield();
+    bool IsShieldActive() const;
+    float GetShieldTimeRemaining() const;
 
     // Lebensmanagement
     void LoseLife();

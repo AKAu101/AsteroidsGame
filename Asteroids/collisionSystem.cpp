@@ -1,86 +1,101 @@
-#include "collisionsystem.h"
+#include "collisionSystem.h"
 #include "globals.h"
 
-CollisionSystem::CollisionSystem(ObjectManager& objManager, Score& score) :
-    objectManager(objManager),
+CollisionSystem::CollisionSystem(ObjectManager& objMgr, Score& score) :
+    objectManager(objMgr),
     gameScore(score) {
 }
 
-void CollisionSystem::CheckCollisions(bool& hasShield, bool isInvulnerable) {
-    Spaceship& player = objectManager.GetPlayer();
-    std::vector<Asteroid>& asteroids = objectManager.GetAsteroids();
-    std::vector<Projectile>& projectiles = objectManager.GetProjectiles();
-    std::vector<PowerUp>& powerups = objectManager.GetPowerups();
+void CollisionSystem::CheckCollisions(bool hasShield, bool isInvulnerable) {
+    CheckProjectileAsteroidCollisions();
+    CheckPlayerAsteroidCollisions(hasShield, isInvulnerable);
+}
 
-    // Player vs Asteroids
-    if (!isInvulnerable) {
+void CollisionSystem::CheckProjectileAsteroidCollisions() {
+    // Verwende const_cast nur wenn nötig - aber sichere Implementierung
+    auto& projectiles = const_cast<std::vector<Projectile>&>(objectManager.GetProjectiles());
+    auto& asteroids = const_cast<std::vector<Asteroid>&>(objectManager.GetAsteroids());
+
+    bool collisionFound = false;
+
+    for (auto& projectile : projectiles) {
+        if (!projectile.IsActive() || collisionFound) continue;
+
         for (auto& asteroid : asteroids) {
-            if (asteroid.IsActive() &&
-                CheckCircleCollision(player.GetPosition(), PLAYER_HIT_RADIUS,
-                    asteroid.GetPosition(), asteroid.GetRadius())) {
-                if (!hasShield) {
-                    player.LoseLife();
+            if (!asteroid.IsActive()) continue;
+
+            if (CheckCollisionRecs(projectile.GetBounds(), asteroid.GetBounds())) {
+                // SOFORT beide Objekte deaktivieren um Mehrfachkollisionen zu verhindern
+                projectile.Deactivate();
+
+                // Daten vor Deaktivierung speichern
+                Vector2 asteroidPos = asteroid.GetPosition();
+                AsteroidSize currentSize = asteroid.GetSize();
+                int points = asteroid.GetPoints();
+
+                // Asteroid SOFORT deaktivieren
+                asteroid.Destroy();
+
+                // Punkte hinzufügen
+                gameScore.AddPoints(points);
+
+                // Kleinere Asteroiden spawnen - aber nur einmal!
+                if (currentSize == LARGE) {
+                    // Leicht versetzte Positionen um Überlappung zu vermeiden
+                    Vector2 pos1 = { asteroidPos.x + 20, asteroidPos.y + 20 };
+                    Vector2 pos2 = { asteroidPos.x - 20, asteroidPos.y - 20 };
+                    objectManager.SpawnAsteroid(pos1, MEDIUM);
+                    objectManager.SpawnAsteroid(pos2, MEDIUM);
                 }
-                else {
-                    isInvulnerable = true;
-                    hasShield = false;
+                else if (currentSize == MEDIUM) {
+                    // Leicht versetzte Positionen um Überlappung zu vermeiden
+                    Vector2 pos1 = { asteroidPos.x + 15, asteroidPos.y + 15 };
+                    Vector2 pos2 = { asteroidPos.x - 15, asteroidPos.y - 15 };
+                    objectManager.SpawnAsteroid(pos1, SMALL);
+                    objectManager.SpawnAsteroid(pos2, SMALL);
                 }
-                break;
+                // SMALL Asteroiden spawnen nichts
+
+                // PowerUp-Spawn-Chance (nur bei großen Asteroiden)
+                if (currentSize == LARGE && GetRandomValue(0, 100) < 20) { // 20% Chance
+                    PowerUpType randomType = static_cast<PowerUpType>(GetRandomValue(0, 2));
+                    objectManager.SpawnPowerUp(asteroidPos, randomType);
+                }
+
+                collisionFound = true;
+                break; // Wichtig: Schleife verlassen nach Kollision
             }
         }
-    }
 
-    // Projectiles vs Asteroids
-    for (size_t i = 0; i < projectiles.size(); i++) {
-        if (!projectiles[i].IsActive()) continue;
-
-        for (size_t j = 0; j < asteroids.size(); j++) {
-            if (!asteroids[j].IsActive()) continue;
-
-            if (CheckCircleCollision(projectiles[i].GetPosition(), PROJECTILE_RADIUS,
-                asteroids[j].GetPosition(), asteroids[j].GetRadius())) {
-                gameScore.AddPoints(asteroids[j].GetPoints());
-                HandleAsteroidDestruction(static_cast<int>(j));
-                projectiles[i].Deactivate();
-                break;
-            }
-        }
-    }
-
-    // Player vs Powerups
-    for (auto& powerup : powerups) {
-        if (powerup.IsActive() &&
-            CheckCircleCollision(player.GetPosition(), PLAYER_HIT_RADIUS,
-                powerup.GetPosition(), POWERUP_RADIUS)) {
-            powerup.Collect();
-        }
+        if (collisionFound) break; // Äußere Schleife auch verlassen
     }
 }
 
-void CollisionSystem::HandleAsteroidDestruction(int asteroidIndex) {
-    std::vector<Asteroid>& asteroids = objectManager.GetAsteroids();
-    Vector2 pos = asteroids[asteroidIndex].GetPosition();
-    AsteroidSize size = asteroids[asteroidIndex].GetSize();
+void CollisionSystem::CheckPlayerAsteroidCollisions(bool hasShield, bool isInvulnerable) {
+    if (isInvulnerable) return; // Spieler ist unverwundbar - keine Kollisionen
 
-    asteroids[asteroidIndex].Destroy();
+    Spaceship& player = objectManager.GetPlayer();
+    auto& asteroids = const_cast<std::vector<Asteroid>&>(objectManager.GetAsteroids());
 
-    if (size == LARGE) {
-        objectManager.SpawnAsteroid({ pos.x + 20, pos.y }, MEDIUM);
-        objectManager.SpawnAsteroid({ pos.x - 20, pos.y }, MEDIUM);
+    Rectangle playerBounds = player.GetBounds();
+
+    for (auto& asteroid : asteroids) {
+        if (!asteroid.IsActive()) continue;
+
+        if (CheckCollisionRecs(playerBounds, asteroid.GetBounds())) {
+            // Asteroid SOFORT deaktivieren
+            asteroid.Destroy();
+
+            // Prüfe ob Schild aktiv ist
+            if (player.IsShieldActive()) {
+                // Schild absorbiert den Schaden und wird zerstört
+                player.DeactivateShield();
+                return; // Spieler verliert kein Leben
+            }
+
+            // Spieler verliert ein Leben (nur wenn kein Schild und nicht unverwundbar)
+            player.LoseLife();
+            break; // Nur eine Kollision pro Frame
+        }
     }
-    else if (size == MEDIUM) {
-        objectManager.SpawnAsteroid({ pos.x + 10, pos.y }, SMALL);
-        objectManager.SpawnAsteroid({ pos.x - 10, pos.y }, SMALL);
-    }
-
-    if ((rand() / static_cast<float>(RAND_MAX)) < POWERUP_SPAWN_RATE) {
-        objectManager.SpawnPowerUp(pos);
-    }
-}
-
-bool CollisionSystem::CheckCircleCollision(Vector2 pos1, float radius1,
-    Vector2 pos2, float radius2) const {
-    float dx = pos1.x - pos2.x;
-    float dy = pos1.y - pos2.y;
-    return (dx * dx + dy * dy) < (radius1 + radius2) * (radius1 + radius2);
 }
