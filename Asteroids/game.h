@@ -8,6 +8,7 @@
 #include "inputhandler.h"
 #include "uirenderer.h"
 #include "score.h"
+#include "highscoreManager.h"
 #include "globals.h"
 
 class Game {
@@ -19,7 +20,7 @@ private:
     bool hasRapid;
     bool hasShield;
     Sound shootSound;
-    Music backgroundMusic; // Musik-Variable hinzugefügt
+    Music backgroundMusic;
     bool gameRunning = true;
 
     // Game objects
@@ -32,6 +33,7 @@ private:
     CollisionSystem collisionSystem;
     InputHandler inputHandler;
     UIRenderer uiRenderer;
+    HighscoreManager highscoreManager;
 
 public:
     Game();
@@ -39,20 +41,20 @@ public:
     void Initialize();
     void Update();
     void Draw();
-    bool ShouldClose()
-    {
-        if (gameRunning == false)
-        {
+    bool ShouldClose() {
+        if (gameRunning == false) {
             return true;
         }
-        else
-        {
+        else {
             return false;
         }
     }
     bool IsGameRunning() const { return gameRunning; }
     void SetGameRunning(bool running) { gameRunning = running; }
-    void PlayShootSound(); // Schuss-Sound Methode
+    void PlayShootSound();
+    void AddHighscoreEntry(const std::string& name, int score);
+    HighscoreManager& GetHighscoreManager() { return highscoreManager; }
+    void ResetGame(); // MOVED TO PUBLIC SECTION
 
 private:
     void InitGameSounds();
@@ -61,8 +63,8 @@ private:
     void HandleSpawning(float deltaTime);
     void CheckGameState();
     void UpdateInGame(float deltaTime);
-    void ResetGame();
     void CheckPowerUpCollisions();
+    void HandleGameOver();
 };
 
 #endif

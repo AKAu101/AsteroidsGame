@@ -1,6 +1,7 @@
 #include "uirenderer.h"
 #include "raymath.h"
 #include "globals.h"
+#include "highscoreManager.h"
 
 UIRenderer::UIRenderer(GameStateManager& stateMgr, Score& score, Spaceship& ship, ObjectManager& objMgr, int& currentItemRef) :
     stateManager(stateMgr), gameScore(score), player(ship), objectManager(objMgr), currentItem(currentItemRef) {
@@ -19,6 +20,15 @@ void UIRenderer::DrawCurrentState() const {
         break;
     case OPTIONS:
         DrawOptionsMenu();
+        break;
+    case HIGHSCORE_ENTRY:
+        DrawNameEntryScreen();
+        break;
+    case HIGHSCORE_DISPLAY:
+        DrawHighscoreScreen();
+        break;
+    case CREDITS:
+        DrawCreditsScreen();
         break;
     default:
         DrawMainMenu(); // Fallback
@@ -81,18 +91,24 @@ void UIRenderer::DrawMainMenu() const {
     DrawText(creator, SCREEN_WIDTH / 2 - creatorWidth / 2, 115, 14, Color{ 120, 60, 160, 255 }); // Lila Farbe
 
     // Menü-Bereich
-    DrawRectangle(50, 160, SCREEN_WIDTH - 100, 280, Color{ 240, 240, 240, 255 });
-    DrawRectangleLines(50, 160, SCREEN_WIDTH - 100, 280, BLACK);
-    DrawRectangleLines(49, 159, SCREEN_WIDTH - 98, 282, WHITE);
+    DrawRectangle(50, 160, SCREEN_WIDTH - 100, 300, Color{ 240, 240, 240, 255 });
+    DrawRectangleLines(50, 160, SCREEN_WIDTH - 100, 300, BLACK);
+    DrawRectangleLines(49, 159, SCREEN_WIDTH - 98, 302, WHITE);
 
-    // Menü-Optionen mit animierten Buttons
-    const char* items[] = { "START GAME", "CONTROLS", "QUIT" };
-    Color itemColors[] = { Color{100, 255, 100, 255}, Color{100, 150, 255, 255}, Color{255, 100, 100, 255} };
-    int menuStartY = 200;
-    int menuItemHeight = 70;
+    // Menü-Optionen mit animierten Buttons (jetzt 5 Optionen)
+    const char* items[] = { "START GAME", "CONTROLS", "HIGHSCORES", "CREDITS", "QUIT" };
+    Color itemColors[] = {
+        Color{100, 255, 100, 255},   // Grün für Start Game
+        Color{100, 150, 255, 255},   // Blau für Controls  
+        Color{255, 215, 0, 255},     // Gold für Highscores
+        Color{255, 100, 255, 255},   // Magenta für Credits
+        Color{255, 100, 100, 255}    // Rot für Quit
+    };
+    int menuStartY = 170;
+    int menuItemHeight = 55;
     int menuItemWidth = 280;
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 5; i++) {  // Geändert zu 5 Optionen
         int itemY = menuStartY + i * menuItemHeight;
         int itemX = SCREEN_WIDTH / 2 - menuItemWidth / 2;
 
@@ -166,8 +182,8 @@ void UIRenderer::DrawMainMenu() const {
         int astX = (int)(centerX + cosf(astAngle * DEG2RAD) * radiusX);
         int astY = (int)(centerY + sinf(astAngle * DEG2RAD) * radiusY);
 
-        // Überprüfung ob Asteroid im Button-Bereich ist (200-470 Y-Bereich)
-        bool inButtonArea = (astY > 190 && astY < 480 && astX > 200 && astX < SCREEN_WIDTH - 200);
+        // Überprüfung ob Asteroid im Button-Bereich ist (angepasst für 5 Buttons)
+        bool inButtonArea = (astY > 160 && astY < 460 && astX > 200 && astX < SCREEN_WIDTH - 200);
 
         if (!inButtonArea) {
             float sizePulse = 1.0f + 0.4f * sinf(animTime * 2.0f + i * 1.2f);
@@ -257,8 +273,8 @@ void UIRenderer::DrawMainMenu() const {
         int starX = 30 + (i * 37) % (SCREEN_WIDTH - 60);
         int starY = 150 + (i * 23) % (SCREEN_HEIGHT - 180);
 
-        // Sterne vermeiden Button-Bereich
-        if (starX > 200 && starX < SCREEN_WIDTH - 200 && starY > 180 && starY < 450) continue;
+        // Sterne vermeiden Button-Bereich (angepasst für 5 Buttons)
+        if (starX > 200 && starX < SCREEN_WIDTH - 200 && starY > 150 && starY < 460) continue;
 
         float twinkle = sinf(animTime * 4.0f + (float)i * 0.8f);
         if (twinkle > 0.3f) {
@@ -381,7 +397,6 @@ void UIRenderer::DrawItemSlot() const {
         // Item-Eigenschaften basierend auf Typ
         const char* itemNames[] = { "", "RAPID", "SHIELD", "LIFE" };
         Color itemColors[] = { WHITE, RED, BLUE, GREEN };
-        const char* itemSymbols[] = { "", "⚡", "🛡", "❤" };
 
         if (currentItem >= 1 && currentItem <= 3) {
             // Item-Hintergrund
@@ -413,9 +428,6 @@ void UIRenderer::DrawItemSlot() const {
             Color pulseColor = itemColors[currentItem];
             pulseColor.a = (unsigned char)(255 * pulse);
             DrawRectangleLines(slotX + 2, slotY + 2, slotSize - 4, slotSize - 4, pulseColor);
-
-            // Extra Debug-Text
-            DrawText(TextFormat("ID:%d", currentItem), slotX + 5, slotY + 75, 8, WHITE);
         }
     }
     else {
@@ -458,10 +470,6 @@ void UIRenderer::DrawGameOver() const {
     const char* instruction1 = "Press ENTER to return to menu";
     int inst1Width = MeasureText(instruction1, 20);
     DrawText(instruction1, SCREEN_WIDTH / 2 - inst1Width / 2, SCREEN_HEIGHT / 2 + 100, 20, LIGHTGRAY);
-
-    const char* instruction2 = "Press R for quick restart";
-    int inst2Width = MeasureText(instruction2, 16);
-    DrawText(instruction2, SCREEN_WIDTH / 2 - inst2Width / 2, SCREEN_HEIGHT / 2 + 130, 16, GRAY);
 
     const char* instruction3 = "Press ESC to quit";
     int inst3Width = MeasureText(instruction3, 16);
@@ -541,10 +549,6 @@ void UIRenderer::DrawOptionsMenu() const {
     DrawText("- Return to main menu / Quit game", 220, currentY, 16, DARKGRAY);
     currentY += lineHeight;
 
-    DrawText("R", 80, currentY, 16, BLACK);
-    DrawText("- Quick restart (Game Over screen)", 220, currentY, 16, DARKGRAY);
-    currentY += lineHeight + 20;
-
     // Tips Section
     DrawText("TIPS:", 60, currentY, 20, MAROON);
     currentY += 25;
@@ -565,4 +569,423 @@ void UIRenderer::DrawOptionsMenu() const {
     // Dekorative Elemente
     DrawRectangleLines(50, 140, SCREEN_WIDTH - 100, 2, BLACK);
     DrawRectangleLines(50, SCREEN_HEIGHT - 100, SCREEN_WIDTH - 100, 2, BLACK);
+}
+
+void UIRenderer::DrawNameEntryScreen() const {
+    // Dunkler Hintergrund mit Verlauf
+    ClearBackground(Color{ 20, 20, 40, 255 });
+
+    // Haupttitel
+    const char* title = "NEW HIGH SCORE!";
+    int titleWidth = MeasureText(title, 50);
+    DrawText(title, SCREEN_WIDTH / 2 - titleWidth / 2, 100, 50, GOLD);
+
+    // Glückwunsch-Text
+    const char* congratsText = "Congratulations! You achieved a new high score!";
+    int congratsWidth = MeasureText(congratsText, 20);
+    DrawText(congratsText, SCREEN_WIDTH / 2 - congratsWidth / 2, 170, 20, WHITE);
+
+    // Score anzeigen
+    const char* scoreText = TextFormat("Your Score: %d", stateManager.GetNameEntryScore());
+    int scoreWidth = MeasureText(scoreText, 30);
+    DrawText(scoreText, SCREEN_WIDTH / 2 - scoreWidth / 2, 220, 30, YELLOW);
+
+    // Position in Rangliste
+    const char* posText = TextFormat("Rank: #%d", stateManager.GetNameEntryPosition() + 1);
+    int posWidth = MeasureText(posText, 25);
+    DrawText(posText, SCREEN_WIDTH / 2 - posWidth / 2, 260, 25, LIME);
+
+    // Name Entry Bereich
+    DrawRectangle(SCREEN_WIDTH / 2 - 200, 320, 400, 80, Color{ 40, 40, 60, 200 });
+    DrawRectangleLines(SCREEN_WIDTH / 2 - 200, 320, 400, 80, WHITE);
+
+    // Name Entry Titel
+    const char* nameTitle = "Enter your name (max 5 characters):";
+    int nameTitleWidth = MeasureText(nameTitle, 18);
+    DrawText(nameTitle, SCREEN_WIDTH / 2 - nameTitleWidth / 2, 300, 18, LIGHTGRAY);
+
+    // Aktueller Name mit Cursor
+    std::string currentName = stateManager.GetPlayerName();
+
+    // Fülle Name mit Unterstrichen auf für bessere Visualisierung
+    std::string displayName = currentName;
+    while (displayName.length() < 5) {
+        displayName += "_";
+    }
+
+    // FESTE Werte für bessere Darstellung
+    int nameSize = 40;
+    int charWidth = 60;  // Feste Breite pro Buchstabe
+    int totalWidth = charWidth * 5;  // 5 Buchstaben
+    int nameX = SCREEN_WIDTH / 2 - totalWidth / 2;
+    int nameY = 340;
+
+    // Hintergrund für jeden Buchstaben - mit fester Breite
+    for (int i = 0; i < 5; i++) {
+        int charX = nameX + i * charWidth;
+
+        // Buchstaben-Hintergrund
+        Color bgColor = (i < (int)currentName.length()) ? Color{ 60, 80, 100, 255 } : Color{ 30, 30, 50, 255 };
+        DrawRectangle(charX, nameY - 5, charWidth - 2, nameSize + 10, bgColor);
+        DrawRectangleLines(charX, nameY - 5, charWidth - 2, nameSize + 10, WHITE);
+
+        // Buchstabe - zentriert im Feld
+        char charStr[2] = { displayName[i], '\0' };
+        Color textColor = (i < (int)currentName.length()) ? WHITE : GRAY;
+        int singleCharWidth = MeasureText(charStr, nameSize);
+        int centeredX = charX + (charWidth - singleCharWidth) / 2;
+        DrawText(charStr, centeredX, nameY, nameSize, textColor);
+    }
+
+    // Blinkender Cursor - angepasst an feste Positionen
+    if ((int)(stateManager.GetCursorBlinkTimer() * 2.0f) % 2 == 0 && currentName.length() < 5) {
+        int cursorX = nameX + (int)currentName.length() * charWidth + charWidth / 2;
+        DrawLine(cursorX, nameY, cursorX, nameY + nameSize, YELLOW);
+    }
+
+    // Anweisungen
+    const char* instructions[] = {
+        "Use A-Z and 0-9 to enter your name",
+        "Use BACKSPACE to delete characters",
+        "Use MINUS (-) for underscore",
+        "Press ENTER to confirm (minimum 1 character)",
+        "Press ESC to use default name (ANON_)"
+    };
+
+    for (int i = 0; i < 5; i++) {
+        int instrWidth = MeasureText(instructions[i], 16);
+        DrawText(instructions[i], SCREEN_WIDTH / 2 - instrWidth / 2, 450 + i * 25, 16, LIGHTGRAY);
+    }
+
+    // Fortschritt anzeigen
+    const char* progressText = TextFormat("Characters entered: %d/5", (int)currentName.length());
+    int progressWidth = MeasureText(progressText, 14);
+    DrawText(progressText, SCREEN_WIDTH / 2 - progressWidth / 2, 580, 14, GRAY);
+
+    // Animierte Partikel für Feier-Effekt
+    static float particleTimer = 0;
+    particleTimer += GetFrameTime();
+
+    for (int i = 0; i < 20; i++) {
+        float angle = particleTimer * 50.0f + i * 18.0f;
+        float radius = 100.0f + sin(particleTimer + i) * 30.0f;
+
+        int particleX = (int)(SCREEN_WIDTH / 2 + cos(angle * DEG2RAD) * radius);
+        int particleY = (int)(200 + sin(angle * DEG2RAD) * radius * 0.5f);
+
+        Color particleColor = (i % 3 == 0) ? GOLD : ((i % 3 == 1) ? YELLOW : ORANGE);
+        DrawCircle(particleX, particleY, 3, particleColor);
+    }
+}
+
+void UIRenderer::DrawHighscoreScreen() const {
+    // Eleganter Hintergrund
+    ClearBackground(Color{ 15, 15, 30, 255 });
+
+    // Titel
+    const char* title = "HIGH SCORES";
+    int titleWidth = MeasureText(title, 50);
+    DrawText(title, SCREEN_WIDTH / 2 - titleWidth / 2, 50, 50, GOLD);
+
+    // Untertitel
+    const char* subtitle = "Hall of Fame - Top Pilots";
+    int subtitleWidth = MeasureText(subtitle, 20);
+    DrawText(subtitle, SCREEN_WIDTH / 2 - subtitleWidth / 2, 110, 20, LIGHTGRAY);
+
+    // Highscore-Liste
+    if (highscoreManager) {
+        const auto& highscores = highscoreManager->GetHighscores();
+
+        // Tabellen-Header
+        int tableStartY = 160;
+        int lineHeight = 40;
+
+        // Header-Hintergrund
+        DrawRectangle(SCREEN_WIDTH / 2 - 400, tableStartY - 10, 800, 35, Color{ 40, 40, 60, 150 });
+        DrawRectangleLines(SCREEN_WIDTH / 2 - 400, tableStartY - 10, 800, 35, WHITE);
+
+        // Header-Text
+        DrawText("RANK", SCREEN_WIDTH / 2 - 350, tableStartY, 20, WHITE);
+        DrawText("NAME", SCREEN_WIDTH / 2 - 200, tableStartY, 20, WHITE);
+        DrawText("SCORE", SCREEN_WIDTH / 2 + 200, tableStartY, 20, WHITE);
+
+        // Highscore-Einträge
+        for (size_t i = 0; i < highscores.size() && i < 10; i++) {
+            int entryY = tableStartY + 40 + (int)i * lineHeight;
+
+            // Abwechselnde Hintergrundfarben
+            Color bgColor = (i % 2 == 0) ? Color{ 25, 25, 45, 100 } : Color{ 35, 35, 55, 100 };
+            DrawRectangle(SCREEN_WIDTH / 2 - 400, entryY - 5, 800, lineHeight - 5, bgColor);
+
+            // Spezielle Hervorhebung für Top 3
+            Color textColor = WHITE;
+            Color rankColor = WHITE;
+            if (i == 0) { rankColor = GOLD; textColor = GOLD; }
+            else if (i == 1) { rankColor = Color{ 192, 192, 192, 255 }; textColor = Color{ 192, 192, 192, 255 }; } // Silber
+            else if (i == 2) { rankColor = Color{ 205, 127, 50, 255 }; textColor = Color{ 205, 127, 50, 255 }; } // Bronze
+
+            // Rang
+            const char* rankText = TextFormat("#%d", (int)i + 1);
+            DrawText(rankText, SCREEN_WIDTH / 2 - 350, entryY, 24, rankColor);
+
+            // Name
+            DrawText(highscores[i].name.c_str(), SCREEN_WIDTH / 2 - 200, entryY, 24, textColor);
+
+            // Score mit Formatierung
+            const char* scoreText = TextFormat("%d", highscores[i].score);
+            int scoreWidth = MeasureText(scoreText, 24);
+            DrawText(scoreText, SCREEN_WIDTH / 2 + 350 - scoreWidth, entryY, 24, textColor);
+
+            // Dekorative Linie nach Top 3
+            if (i == 2) {
+                DrawLine(SCREEN_WIDTH / 2 - 380, entryY + 35, SCREEN_WIDTH / 2 + 380, entryY + 35, GRAY);
+            }
+        }
+
+        // Wenn weniger als 10 Einträge vorhanden sind
+        if (highscores.size() < 10) {
+            for (size_t i = highscores.size(); i < 10; i++) {
+                int entryY = tableStartY + 40 + (int)i * lineHeight;
+
+                Color bgColor = (i % 2 == 0) ? Color{ 25, 25, 45, 50 } : Color{ 35, 35, 55, 50 };
+                DrawRectangle(SCREEN_WIDTH / 2 - 400, entryY - 5, 800, lineHeight - 5, bgColor);
+
+                const char* rankText = TextFormat("#%d", (int)i + 1);
+                DrawText(rankText, SCREEN_WIDTH / 2 - 350, entryY, 24, GRAY);
+                DrawText("-----", SCREEN_WIDTH / 2 - 200, entryY, 24, GRAY);
+                DrawText("---", SCREEN_WIDTH / 2 + 300, entryY, 24, GRAY);
+            }
+        }
+
+        // Rahmen um die gesamte Tabelle
+        DrawRectangleLines(SCREEN_WIDTH / 2 - 400, tableStartY - 10, 800, 450, WHITE);
+    }
+
+    // Anweisungen
+    const char* instruction = "Press ENTER or ESC to return to main menu";
+    int instrWidth = MeasureText(instruction, 20);
+    DrawText(instruction, SCREEN_WIDTH / 2 - instrWidth / 2, SCREEN_HEIGHT - 80, 20, WHITE);
+
+    // Zusätzliche Info
+    const char* info = "Destroy asteroids and collect power-ups to climb the rankings!";
+    int infoWidth = MeasureText(info, 16);
+    DrawText(info, SCREEN_WIDTH / 2 - infoWidth / 2, SCREEN_HEIGHT - 50, 16, LIGHTGRAY);
+
+    // Animierte Sterne im Hintergrund
+    static float starTimer = 0;
+    starTimer += GetFrameTime();
+
+    for (int i = 0; i < 30; i++) {
+        float twinkle = sin(starTimer * 2.0f + (float)i * 0.5f);
+        if (twinkle > 0.2f) {
+            int starX = 50 + (i * 37) % (SCREEN_WIDTH - 100);
+            int starY = 130 + (i * 23) % (SCREEN_HEIGHT - 200);
+
+            // Vermeide Sterne im Tabellenbereich
+            if (starX > SCREEN_WIDTH / 2 - 420 && starX < SCREEN_WIDTH / 2 + 420 &&
+                starY > 140 && starY < 620) continue;
+
+            unsigned char alpha = (unsigned char)(100 + twinkle * 155);
+            DrawPixel(starX, starY, Color{ 255, 255, 255, alpha });
+        }
+    }
+}
+
+void UIRenderer::DrawCreditsScreen() const {
+    // Animationszeit für Scroll-Effekte
+    static float animTime = 0;
+    animTime += GetFrameTime();
+
+    // Eleganter Hintergrund mit Sternenfeld
+    ClearBackground(Color{ 10, 10, 25, 255 });
+
+    // Animierte Sterne im Hintergrund
+    for (int i = 0; i < 100; i++) {
+        float twinkle = sin(animTime * 1.5f + (float)i * 0.3f);
+        if (twinkle > 0.1f) {
+            int starX = (i * 47) % SCREEN_WIDTH;
+            int starY = (i * 23) % SCREEN_HEIGHT;
+
+            unsigned char alpha = (unsigned char)(50 + twinkle * 100);
+            Color starColor = (i % 4 == 0) ? BLUE : ((i % 4 == 1) ? WHITE : ((i % 4 == 2) ? YELLOW : PURPLE));
+            starColor.a = alpha;
+            DrawPixel(starX, starY, starColor);
+        }
+    }
+
+    // Haupttitel mit Glow-Effekt
+    const char* title = "CREDITS";
+    int titleWidth = MeasureText(title, 60);
+    float titleGlow = 1.0f + 0.3f * sin(animTime * 3.0f);
+
+    // Titel-Glow (mehrere Schichten)
+    for (int i = 0; i < 3; i++) {
+        Color glowColor = GOLD;
+        glowColor.a = (unsigned char)(30 - i * 10);
+        DrawText(title, SCREEN_WIDTH / 2 - titleWidth / 2 - i, 50 - i, (int)(60 * titleGlow), glowColor);
+    }
+    DrawText(title, SCREEN_WIDTH / 2 - titleWidth / 2, 50, (int)(60 * titleGlow), GOLD);
+
+    // Untertitel
+    const char* subtitle = "The People Behind This Epic Space Adventure";
+    int subtitleWidth = MeasureText(subtitle, 20);
+    DrawText(subtitle, SCREEN_WIDTH / 2 - subtitleWidth / 2, 120, 20, LIGHTGRAY);
+
+    // Credits-Container (größerer, scrollbarer Bereich)
+    int containerX = SCREEN_WIDTH / 2 - 500;
+    int containerY = 160;
+    int containerWidth = 1000;
+    int containerHeight = 450;
+    DrawRectangle(containerX, containerY, containerWidth, containerHeight, Color{ 20, 20, 40, 200 });
+    DrawRectangleLines(containerX, containerY, containerWidth, containerHeight, GOLD);
+
+    // Scrolling Credits - vertikal scrollend
+    float scrollSpeed = 30.0f; // Pixel pro Sekunde
+    float totalContentHeight = 18 * 25 + 6 * 25 + 100; // Credits + Thanks + Padding
+    float scrollY = fmod(animTime * scrollSpeed, totalContentHeight + containerHeight);
+
+    int startY = (int)(containerY + containerHeight - scrollY);
+    int lineHeight = 25;
+    int currentY = startY;
+
+    // Credits-Einträge
+    struct CreditEntry {
+        const char* role;
+        const char* name;
+        Color roleColor;
+        Color nameColor;
+    };
+
+    CreditEntry credits[] = {
+        {"GAME DIRECTOR", "Adrian Kranyak", GOLD, WHITE},
+        {"LEAD PROGRAMMER", "Adrian Kranyak", Color{100, 255, 100, 255}, WHITE},
+        {"GAME DESIGNER", "Adrian Kranyak", Color{100, 150, 255, 255}, WHITE},
+        {"GRAPHICS PROGRAMMER", "Adrian Kranyak", Color{255, 100, 255, 255}, WHITE},
+        {"PHYSICS PROGRAMMER", "Adrian Kranyak", Color{255, 215, 0, 255}, WHITE},
+        {"UI/UX DESIGNER", "Adrian Kranyak", Color{255, 150, 100, 255}, WHITE},
+        {"AUDIO INTEGRATION", "Adrian Kranyak", Color{150, 255, 150, 255}, WHITE},
+        {"COLLISION SYSTEM", "Adrian Kranyak", Color{150, 150, 255, 255}, WHITE},
+        {"GAMEPLAY MECHANICS", "Adrian Kranyak", Color{255, 255, 100, 255}, WHITE},
+        {"POWER-UP SYSTEM", "Adrian Kranyak", Color{255, 100, 150, 255}, WHITE},
+        {"HIGHSCORE SYSTEM", "Adrian Kranyak", Color{100, 255, 255, 255}, WHITE},
+        {"MENU SYSTEM", "Adrian Kranyak", Color{200, 100, 255, 255}, WHITE},
+        {"VISUAL EFFECTS", "Adrian Kranyak", Color{255, 200, 100, 255}, WHITE},
+        {"PARTICLE SYSTEMS", "Adrian Kranyak", Color{100, 200, 255, 255}, WHITE},
+        {"ANIMATION SYSTEM", "Adrian Kranyak", Color{255, 150, 200, 255}, WHITE},
+        {"GAME BALANCE", "Adrian Kranyak", Color{150, 255, 200, 255}, WHITE},
+        {"QUALITY ASSURANCE", "Adrian Kranyak", Color{200, 255, 150, 255}, WHITE},
+        {"PROJECT MANAGEMENT", "Adrian Kranyak", Color{255, 200, 200, 255}, WHITE}
+    };
+
+    int numCredits = sizeof(credits) / sizeof(credits[0]);
+
+    // Credits zeichnen (nur wenn sichtbar im Container)
+    for (int i = 0; i < numCredits; i++) {
+        if (currentY >= containerY && currentY <= containerY + containerHeight - lineHeight) {
+            // Role (links, aber innerhalb Container)
+            DrawText(credits[i].role, containerX + 50, currentY, 16, credits[i].roleColor);
+
+            // Trennpunkte (kürzer)
+            DrawText("........................", SCREEN_WIDTH / 2 - 80, currentY, 16, GRAY);
+
+            // Name (rechts, aber innerhalb Container)
+            int nameWidth = MeasureText(credits[i].name, 16);
+            DrawText(credits[i].name, containerX + containerWidth - nameWidth - 50, currentY, 16, credits[i].nameColor);
+
+            // Schimmer-Effekt für Adrian's Namen
+            if (strcmp(credits[i].name, "Adrian Kranyak") == 0 && (int)(animTime * 4.0f + i) % 8 == 0) {
+                Color shimmer = YELLOW;
+                shimmer.a = 100;
+                DrawText(credits[i].name, containerX + containerWidth - nameWidth - 49, currentY + 1, 16, shimmer);
+            }
+        }
+        currentY += lineHeight;
+    }
+
+    // Abstand vor Special Thanks
+    currentY += 40;
+
+    // Special Thanks Titel
+    if (currentY >= containerY && currentY <= containerY + containerHeight - lineHeight) {
+        const char* thanksTitle = "SPECIAL THANKS";
+        int thanksTitleWidth = MeasureText(thanksTitle, 20);
+        DrawText(thanksTitle, SCREEN_WIDTH / 2 - thanksTitleWidth / 2, currentY, 20, GOLD);
+    }
+    currentY += 30;
+
+    // Special Thanks Liste
+    const char* specialThanks[] = {
+        "Raylib - For making a cheat sheet that felt like ragebait",
+        "Classic Atari Asteroids - For the timeless inspiration",
+        "Redbull - for letting me stay awake",
+        "Claude Ai - for helping me with design, because I am a programmer and dont understand colors",
+        "GitHub - For version control and code management",
+        "Visual Studio - For the excellent development environment",
+		"Valorant - to have fun after hours of programming",
+        "And you - for playing this game :)"
+    };
+
+    int numThanks = sizeof(specialThanks) / sizeof(specialThanks[0]);
+    for (int i = 0; i < numThanks; i++) {
+        if (currentY >= containerY && currentY <= containerY + containerHeight - lineHeight) {
+            int thanksWidth = MeasureText(specialThanks[i], 14);
+            DrawText(specialThanks[i], SCREEN_WIDTH / 2 - thanksWidth / 2, currentY, 14, LIGHTGRAY);
+        }
+        currentY += 25;
+    }
+
+    // Footer (außerhalb Container, fest am Bildschirmrand)
+    const char* copyright = "© 2025 Adrian Kranyak - All Rights Reserved";
+    int copyrightWidth = MeasureText(copyright, 12);
+    DrawText(copyright, SCREEN_WIDTH / 2 - copyrightWidth / 2, SCREEN_HEIGHT - 100, 12, GRAY);
+
+    const char* version = "Asteroids Enhanced Edition v2.0 - MS Paint Style";
+    int versionWidth = MeasureText(version, 14);
+    DrawText(version, SCREEN_WIDTH / 2 - versionWidth / 2, SCREEN_HEIGHT - 80, 14, Color{ 150, 150, 150, 255 });
+
+    const char* engine = "Powered by Raylib & C++";
+    int engineWidth = MeasureText(engine, 12);
+    DrawText(engine, SCREEN_WIDTH / 2 - engineWidth / 2, SCREEN_HEIGHT - 60, 12, Color{ 100, 150, 200, 255 });
+
+    // Animierte Raumschiffe (außerhalb Container)
+    for (int i = 0; i < 3; i++) {
+        float shipAngle = animTime * (30.0f + i * 10.0f) + i * 120.0f;
+        float shipRadius = 150.0f + i * 50.0f;
+
+        int shipX = (int)(SCREEN_WIDTH / 2 + cos(shipAngle * DEG2RAD) * shipRadius);
+        int shipY = (int)(SCREEN_HEIGHT / 2 + sin(shipAngle * DEG2RAD) * shipRadius * 0.3f);
+
+        // Vermeide Kollision mit Credits-Container
+        if (shipX > containerX && shipX < containerX + containerWidth &&
+            shipY > containerY && shipY < containerY + containerHeight) continue;
+
+        Color shipColor = (i == 0) ? Color{ 100, 150, 255, 180 } :
+            (i == 1) ? Color{ 255, 100, 150, 180 } :
+            Color{ 150, 255, 100, 180 };
+
+        // Mini-Raumschiff
+        DrawTriangle(
+            Vector2{ (float)shipX, (float)shipY - 6 },      // Spitze
+            Vector2{ (float)shipX - 4, (float)shipY + 4 },  // Links
+            Vector2{ (float)shipX + 4, (float)shipY + 4 },  // Rechts
+            shipColor
+        );
+
+        // Triebwerks-Partikel
+        for (int j = 0; j < 2; j++) {
+            int particleX = shipX + GetRandomValue(-1, 1);
+            int particleY = shipY + 6 + j * 2;
+            Color particleColor = Color{ 255, (unsigned char)(150 + j * 50), 0, (unsigned char)(150 - j * 50) };
+            DrawCircle(particleX, particleY, 1, particleColor);
+        }
+    }
+
+    // Anweisungen zum Zurückkehren
+    const char* instruction = "Press any key to return to main menu";
+    int instrWidth = MeasureText(instruction, 18);
+
+    // Blinkender Text
+    if ((int)(animTime * 3.0f) % 2 == 0) {
+        DrawText(instruction, SCREEN_WIDTH / 2 - instrWidth / 2, SCREEN_HEIGHT - 30, 18, WHITE);
+    }
 }

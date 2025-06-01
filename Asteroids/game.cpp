@@ -1,6 +1,7 @@
 ﻿#include "game.h"
 #include "globals.h"
-#include <iostream> // Für Debug-Ausgaben
+#include "highscoreManager.h"
+#include <iostream>
 
 Game::Game() :
     projectileCooldown(0),
@@ -18,6 +19,9 @@ Game::Game() :
         currentItem, hasRapid, amountRapid, hasShield),
     uiRenderer(stateManager, gameScore, player, objectManager, currentItem) {
     InitGameSounds();
+
+    // HighscoreManager mit UIRenderer verknüpfen
+    uiRenderer.SetHighscoreManager(&highscoreManager);
 }
 
 Game::~Game() {
@@ -87,10 +91,6 @@ void Game::CheckPowerUpCollisions() {
         if (powerup.IsActive()) {
             Rectangle powerupBounds = powerup.GetBounds();
 
-            // Debug: PowerUp-Position ausgeben
-            printf("PowerUp active at: %.1f, %.1f (size: %.1fx%.1f)\n",
-                powerupBounds.x, powerupBounds.y, powerupBounds.width, powerupBounds.height);
-
             if (CheckCollisionRecs(playerBounds, powerupBounds)) {
                 printf("COLLISION DETECTED! PowerUp Type: %d\n", (int)powerup.GetType());
 
@@ -137,22 +137,21 @@ void Game::Draw() {
 void Game::InitGameSounds() {
     InitAudioDevice();
     shootSound = LoadSound("Sounds/shoot.wav");
-    SetSoundVolume(shootSound, 0.3f); // Sound auf 30% der ursprünglichen Lautstärke setzen
+    SetSoundVolume(shootSound, 0.3f);
 
-    // Hintergrundmusik laden
     backgroundMusic = LoadMusicStream("Sounds/Soundtrack.ogg");
-    SetMusicVolume(backgroundMusic, 0.1f); // Musik auf 20% Lautstärke (leiser)
-    PlayMusicStream(backgroundMusic); // Musik starten
+    SetMusicVolume(backgroundMusic, 0.1f);
+    PlayMusicStream(backgroundMusic);
 }
 
 void Game::UnloadGameSounds() {
     UnloadSound(shootSound);
-    UnloadMusicStream(backgroundMusic); // Musik entladen
+    UnloadMusicStream(backgroundMusic);
     CloseAudioDevice();
 }
 
 void Game::PlayShootSound() {
-    if (shootSound.frameCount > 0) { // Prüfe ob Sound geladen ist
+    if (shootSound.frameCount > 0) {
         PlaySound(shootSound);
     }
 }
@@ -163,10 +162,9 @@ void Game::UpdateTimers(float deltaTime) {
 }
 
 void Game::HandleSpawning(float deltaTime) {
-    // Progressiver Spawn-Timer basierend auf Score
     float baseSpawnTime = 10.0f;
     float minSpawnTime = 3.0f;
-    float scoreReduction = gameScore.GetScore() / 1000.0f; // Pro 1000 Punkte wird es schneller
+    float scoreReduction = gameScore.GetScore() / 1000.0f;
     float currentSpawnTime = SafeMax(minSpawnTime, baseSpawnTime - scoreReduction);
 
     if (asteroidSpawnTimer > currentSpawnTime) {
@@ -185,18 +183,39 @@ void Game::CheckGameState() {
     }
 
     if (!asteroidsActive) {
-        // Spawne mehr Asteroiden basierend auf Score statt Level
         int baseAsteroids = 4;
-        int bonusAsteroids = gameScore.GetScore() / 2000; // Alle 2000 Punkte ein Asteroid mehr
-        int maxAsteroids = 10; // Maximal 10 Asteroiden gleichzeitig
+        int bonusAsteroids = gameScore.GetScore() / 2000;
+        int maxAsteroids = 10;
         int asteroidsToSpawn = (int)SafeMin((float)maxAsteroids, (float)(baseAsteroids + bonusAsteroids));
 
         objectManager.SpawnAsteroids(asteroidsToSpawn);
     }
 
     if (player.GetLives() <= 0) {
+        HandleGameOver();
+    }
+}
+
+void Game::HandleGameOver() {
+    int finalScore = gameScore.GetScore();
+
+    // Prüfe ob neuer Highscore erreicht wurde
+    if (highscoreManager.IsNewHighscore(finalScore)) {
+        // Bestimme Position in der Highscore-Liste
+        int position = highscoreManager.GetHighscorePosition(finalScore);
+
+        // Name Entry initialisieren
+        stateManager.InitializeNameEntry(finalScore, position);
+        stateManager.SetState(HIGHSCORE_ENTRY);
+    }
+    else {
+        // Kein neuer Highscore - direkt zu Game Over
         stateManager.SetState(GAME_OVER);
     }
+}
+
+void Game::AddHighscoreEntry(const std::string& name, int score) {
+    highscoreManager.AddHighscore(name, score);
 }
 
 void Game::ResetGame() {
@@ -207,6 +226,9 @@ void Game::ResetGame() {
     asteroidSpawnTimer = 0;
     hasRapid = false;
     hasShield = false;
-    currentItem = 0; // Item zurücksetzen
+    currentItem = 0;
     objectManager.SpawnAsteroids(4);
+
+    // Name Entry zurücksetzen
+    stateManager.ResetNameEntry();
 }

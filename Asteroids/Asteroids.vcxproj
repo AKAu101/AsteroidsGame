@@ -131,6 +131,7 @@
     <ClCompile Include="collisionSystem.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="gamestate.cpp" />
+    <ClCompile Include="highscoreManager.cpp" />
     <ClCompile Include="inputHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="objectManager.cpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="game.h" />
     <ClInclude Include="gamestate.h" />
     <ClInclude Include="globals.h" />
+    <ClInclude Include="highscoreManager.h" />
     <ClInclude Include="inputHandler.h" />
     <ClInclude Include="objectManager.h" />
     <ClInclude Include="powerup.h" />

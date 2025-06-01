@@ -10,7 +10,12 @@ GameStateManager::GameStateManager() :
     previousState(MAIN_MENU),
     stateChanged(false),
     stateTransitionTime(0.0f),
-    menuSelection(0) {
+    menuSelection(0),
+    playerName(""),
+    nameEntryScore(0),
+    nameEntryPosition(0),
+    animationTimer(0.0f),
+    cursorBlinkTimer(0.0f) {
 }
 
 void GameStateManager::SetState(GameState newState) {
@@ -31,11 +36,32 @@ void GameStateManager::Update(float deltaTime) {
     if (stateChanged) {
         stateTransitionTime += deltaTime;
 
-        // After transition period, clear the flag
         if (stateTransitionTime > 0.1f) {
             stateChanged = false;
         }
     }
+
+    // Update animation timers for name entry
+    if (currentState == HIGHSCORE_ENTRY) {
+        animationTimer += deltaTime;
+        cursorBlinkTimer += deltaTime;
+    }
+}
+
+void GameStateManager::InitializeNameEntry(int score, int position) {
+    nameEntryScore = score;
+    nameEntryPosition = position;
+    playerName = "";
+    animationTimer = 0.0f;
+    cursorBlinkTimer = 0.0f;
+}
+
+void GameStateManager::ResetNameEntry() {
+    playerName = "";
+    nameEntryScore = 0;
+    nameEntryPosition = 0;
+    animationTimer = 0.0f;
+    cursorBlinkTimer = 0.0f;
 }
 
 const char* GameStateManager::GetStateName(GameState state) {
@@ -44,6 +70,9 @@ const char* GameStateManager::GetStateName(GameState state) {
     case IN_GAME: return "In Game";
     case OPTIONS: return "Options";
     case GAME_OVER: return "Game Over";
+    case HIGHSCORE_ENTRY: return "Highscore Entry";
+    case HIGHSCORE_DISPLAY: return "Highscore Display";
+    case CREDITS: return "Credits";
     default: return "Unknown";
     }
 }

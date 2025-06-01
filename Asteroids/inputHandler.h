@@ -23,6 +23,9 @@ private:
     void HandleOptionsInput();
     void HandleGameInput(float deltaTime);
     void HandleGameOverInput();
+    void HandleHighscoreDisplayInput();
+    void HandleNameEntryInput();
+    void HandleCreditsInput();  // Neue Methode für Credits
 
 public:
     InputHandler(Game& game, GameStateManager& stateMgr, ObjectManager& objMgr,

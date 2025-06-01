@@ -12,12 +12,14 @@ private:
     Score& gameScore;
     Spaceship& player;
     ObjectManager& objectManager;
-    int& currentItem; // Referenz auf currentItem aus Game
+    int& currentItem;
+    class HighscoreManager* highscoreManager = nullptr;
 
 public:
     UIRenderer(GameStateManager& stateMgr, Score& score, Spaceship& ship, ObjectManager& objMgr, int& currentItemRef);
 
     void DrawCurrentState() const;
+    void SetHighscoreManager(class HighscoreManager* hsMgr) { highscoreManager = hsMgr; }
 
 private:
     void DrawCheckeredBackground() const;
@@ -28,6 +30,9 @@ private:
     void DrawGameUI() const;
     void DrawOptionsMenu() const;
     void DrawItemSlot() const;
+    void DrawNameEntryScreen() const;
+    void DrawHighscoreScreen() const;
+    void DrawCreditsScreen() const;  // Credits-Methode hinzugefügt
 };
 
 #endif
