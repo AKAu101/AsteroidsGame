@@ -1,29 +1,16 @@
 #include "gamestate.h"
-#include "raylib.h"
+#include <iostream>
 
-class GameStateManager {
-private:
-    GameState currentState;
-    GameState previousState;
-    bool stateChanged;
-    float stateTransitionTime;
+// Global instance (if needed for C-style interface)
+static GameStateManager g_stateManager;
 
-public:
-    GameStateManager();
-    void SetState(GameState newState);
-    GameState GetCurrentState() const { return currentState; }
-    GameState GetPreviousState() const { return previousState; }
-    bool HasStateChanged() const { return stateChanged; }
-    void Update(float deltaTime);
-    void ClearStateChange() { stateChanged = false; }
-    float GetTransitionTime() const { return stateTransitionTime; }
-};
-
-GameStateManager::GameStateManager() {
-    currentState = MAIN_MENU;
-    previousState = MAIN_MENU;
-    stateChanged = false;
-    stateTransitionTime = 0.0f;
+// GameStateManager implementation
+GameStateManager::GameStateManager() :
+    currentState(MAIN_MENU),
+    previousState(MAIN_MENU),
+    stateChanged(false),
+    stateTransitionTime(0.0f),
+    menuSelection(0) {
 }
 
 void GameStateManager::SetState(GameState newState) {
@@ -32,6 +19,11 @@ void GameStateManager::SetState(GameState newState) {
         currentState = newState;
         stateChanged = true;
         stateTransitionTime = 0.0f;
+
+        // Reset menu selection when returning to menu
+        if (newState == MAIN_MENU) {
+            menuSelection = 0;
+        }
     }
 }
 
@@ -39,46 +31,14 @@ void GameStateManager::Update(float deltaTime) {
     if (stateChanged) {
         stateTransitionTime += deltaTime;
 
-        // After a short transition time, clear the state change flag
+        // After transition period, clear the flag
         if (stateTransitionTime > 0.1f) {
             stateChanged = false;
         }
     }
 }
 
-// Global state manager instance
-static GameStateManager g_stateManager;
-
-// C-style interface functions for easier use
-void InitializeGameState() {
-    g_stateManager = GameStateManager();
-}
-
-void SetGameState(GameState newState) {
-    g_stateManager.SetState(newState);
-}
-
-GameState GetCurrentGameState() {
-    return g_stateManager.GetCurrentState();
-}
-
-GameState GetPreviousGameState() {
-    return g_stateManager.GetPreviousState();
-}
-
-bool HasGameStateChanged() {
-    return g_stateManager.HasStateChanged();
-}
-
-void UpdateGameState(float deltaTime) {
-    g_stateManager.Update(deltaTime);
-}
-
-void ClearGameStateChange() {
-    g_stateManager.ClearStateChange();
-}
-
-const char* GetGameStateName(GameState state) {
+const char* GameStateManager::GetStateName(GameState state) {
     switch (state) {
     case MAIN_MENU: return "Main Menu";
     case IN_GAME: return "In Game";
@@ -88,11 +48,45 @@ const char* GetGameStateName(GameState state) {
     }
 }
 
-bool IsGameStatePlaying() {
-    return GetCurrentGameState() == IN_GAME;
-}
+// C-style interface implementation
+namespace GameStateUtils {
+    void Initialize() {
+        g_stateManager = GameStateManager();
+    }
 
-bool IsGameStateMenu() {
-    GameState state = GetCurrentGameState();
-    return state == MAIN_MENU || state == OPTIONS || state == GAME_OVER;
+    void SetState(GameState newState) {
+        g_stateManager.SetState(newState);
+    }
+
+    GameState GetCurrentState() {
+        return g_stateManager.GetCurrentState();
+    }
+
+    GameState GetPreviousState() {
+        return g_stateManager.GetPreviousState();
+    }
+
+    bool HasStateChanged() {
+        return g_stateManager.HasStateChanged();
+    }
+
+    void Update(float deltaTime) {
+        g_stateManager.Update(deltaTime);
+    }
+
+    void ClearStateChange() {
+        g_stateManager.ClearStateChange();
+    }
+
+    const char* GetStateName(GameState state) {
+        return GameStateManager::GetStateName(state);
+    }
+
+    bool IsPlayingState() {
+        return g_stateManager.IsPlayingState();
+    }
+
+    bool IsMenuState() {
+        return g_stateManager.IsMenuState();
+    }
 }
