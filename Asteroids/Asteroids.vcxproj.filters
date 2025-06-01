@@ -42,9 +42,6 @@
     <ClCompile Include="powerup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="test.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="objectManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -138,7 +138,6 @@
     <ClCompile Include="projectile.cpp" />
     <ClCompile Include="score.cpp" />
     <ClCompile Include="spaceship.cpp" />
-    <ClCompile Include="test.cpp" />
     <ClCompile Include="uiRenderer.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>

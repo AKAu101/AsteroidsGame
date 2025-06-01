@@ -35,6 +35,9 @@ void Game::Initialize() {
 void Game::Update() {
     float deltaTime = GetFrameTime();
 
+    // Hintergrundmusik updaten
+    UpdateMusicStream(backgroundMusic);
+
     inputHandler.HandleInput(deltaTime);
     stateManager.Update(deltaTime);
 
@@ -47,22 +50,22 @@ void Game::UpdateInGame(float deltaTime) {
     player.Update(deltaTime);
     objectManager.UpdateObjects(deltaTime);
     UpdateTimers(deltaTime);
+
     bool isInvulnerable = player.IsInvulnerable();
+
+    // DEBUG: Unverwundbarkeits-Status ausgeben
+    static float debugTimer = 0;
+    debugTimer += deltaTime;
+    if (debugTimer > 1.0f && isInvulnerable) {
+        printf("Player is INVULNERABLE for %.1f more seconds\n",
+            player.GetInvulnerabilityTime());
+        debugTimer = 0;
+    }
+
     collisionSystem.CheckCollisions(hasShield, isInvulnerable);
     HandleSpawning(deltaTime);
     CheckGameState();
-    CheckPowerUpCollisions(); // Diese Methode prüfen wir
-
-    // DEBUG: Item-Status anzeigen
-    static float debugTimer = 0;
-    debugTimer += deltaTime;
-    if (debugTimer > 1.0f) {
-        if (currentItem > 0) {
-            const char* itemNames[] = { "NONE", "RAPID_FIRE", "SHIELD", "EXTRA_LIFE" };
-            printf("Current Item: %s (%d)\n", itemNames[currentItem], currentItem);
-        }
-        debugTimer = 0;
-    }
+    CheckPowerUpCollisions();
 }
 
 void Game::CheckPowerUpCollisions() {
@@ -134,11 +137,24 @@ void Game::Draw() {
 void Game::InitGameSounds() {
     InitAudioDevice();
     shootSound = LoadSound("Sounds/shoot.wav");
+    SetSoundVolume(shootSound, 0.3f); // Sound auf 30% der ursprünglichen Lautstärke setzen
+
+    // Hintergrundmusik laden
+    backgroundMusic = LoadMusicStream("Sounds/Soundtrack.ogg");
+    SetMusicVolume(backgroundMusic, 0.1f); // Musik auf 20% Lautstärke (leiser)
+    PlayMusicStream(backgroundMusic); // Musik starten
 }
 
 void Game::UnloadGameSounds() {
     UnloadSound(shootSound);
+    UnloadMusicStream(backgroundMusic); // Musik entladen
     CloseAudioDevice();
+}
+
+void Game::PlayShootSound() {
+    if (shootSound.frameCount > 0) { // Prüfe ob Sound geladen ist
+        PlaySound(shootSound);
+    }
 }
 
 void Game::UpdateTimers(float deltaTime) {

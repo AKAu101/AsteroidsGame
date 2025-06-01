@@ -12,8 +12,8 @@ Projectile::Projectile() {
 void Projectile::Fire(Vector2 startPos, float rotation) {
     position = startPos;
     float radians = rotation * WINKEL2GRAD;
-    velocity.x = cos(radians) * PROJECTILE_SPEED;
-    velocity.y = sin(radians) * PROJECTILE_SPEED;
+    velocity.x = cosf(radians) * PROJECTILE_SPEED;
+    velocity.y = sinf(radians) * PROJECTILE_SPEED;
     lifetime = PROJECTILE_LIFETIME;
     active = true;
 }
@@ -39,20 +39,20 @@ void Projectile::Update(float deltaTime) {
 void Projectile::Draw() const {
     if (!active) return;
 
-    // Hochkantiges, schmales Rechteck (3 Pixel breit, 12 Pixel hoch)
+    // Schwarzes Rechteck für bessere Sichtbarkeit
     Rectangle rect = {
-        position.x - 1.5f,  // Zentriert (1.5 Pixel auf jeder Seite)
-        position.y - 6.0f,   // 6 Pixel nach oben (halbe H�he)
-        3.0f,               // Breite
-        12.0f               // H�he
+        position.x - 2.0f,  // Zentriert
+        position.y - 6.0f,  // 6 Pixel nach oben
+        4.0f,               // Breite
+        12.0f               // Höhe
     };
 
-    // Optional: Ausrichtung in Bewegungsrichtung
-    float angle = atan2f(velocity.y, velocity.x) * RAD2DEG + 90.0f; // +90� f�E Hochkant
+    // Ausrichtung in Bewegungsrichtung
+    float angle = atan2f(velocity.y, velocity.x) * RAD2DEG + 90.0f; // +90° für Hochkant
 
     DrawRectanglePro(
         rect,
-        Vector2{ 1.5f, 6.0f },  // Pivotpunkt in der Mitte
+        Vector2{ 2.0f, 6.0f },  // Pivotpunkt in der Mitte
         angle,
         BLACK
     );

@@ -50,7 +50,7 @@ void InputHandler::HandleMainMenuInput() {
         case 0: // START GAME
             stateManager.SetState(IN_GAME);
             break;
-        case 1: // OPTIONS
+        case 1: // CONTROLS
             stateManager.SetState(OPTIONS);
             break;
         case 2: // QUIT
@@ -85,9 +85,23 @@ void InputHandler::HandleGameInput(float deltaTime) {
         player.Rotate(1, deltaTime);
     }
 
-    // Schieﬂen
+    // Schieﬂen - KORRIGIERT: Projektile spawnen vor der Spitze
     if (IsKeyDown(KEY_SPACE) && projectileCooldown <= 0) {
-        objectManager.FireProjectile(player.GetPosition(), player.GetRotation());
+        // Schuss-Position an der Spitze des Raumschiffs berechnen
+        Vector2 playerPos = player.GetPosition();
+        float playerRotation = player.GetRotation();
+        float radian = playerRotation * DEG2RAD;
+
+        // Projektil etwas vor der Raumschiff-Spitze spawnen
+        Vector2 firePosition = {
+            playerPos.x + cosf(radian) * 20.0f,  // 20 Pixel vor der Spitze
+            playerPos.y + sinf(radian) * 20.0f
+        };
+
+        objectManager.FireProjectile(firePosition, playerRotation);
+
+        // Schuss-Sound abspielen (¸ber Game-Klasse)
+        game.PlayShootSound();
 
         // Debug: Schuss-Info
         if (hasRapid) {

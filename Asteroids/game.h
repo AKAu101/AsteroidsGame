@@ -19,6 +19,7 @@ private:
     bool hasRapid;
     bool hasShield;
     Sound shootSound;
+    Music backgroundMusic; // Musik-Variable hinzugefügt
     bool gameRunning = true;
 
     // Game objects
@@ -51,6 +52,7 @@ public:
     }
     bool IsGameRunning() const { return gameRunning; }
     void SetGameRunning(bool running) { gameRunning = running; }
+    void PlayShootSound(); // Schuss-Sound Methode
 
 private:
     void InitGameSounds();
@@ -60,7 +62,7 @@ private:
     void CheckGameState();
     void UpdateInGame(float deltaTime);
     void ResetGame();
-    void CheckPowerUpCollisions(); // Neue Deklaration
+    void CheckPowerUpCollisions();
 };
 
 #endif
