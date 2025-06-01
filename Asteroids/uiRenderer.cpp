@@ -2,8 +2,8 @@
 #include "raymath.h"
 #include "globals.h"
 
-UIRenderer::UIRenderer(GameStateManager& stateMgr, Score& score) :
-    stateManager(stateMgr), gameScore(score) {
+UIRenderer::UIRenderer(GameStateManager& stateMgr, Score& score, Spaceship& ship, ObjectManager& objMgr) :
+    stateManager(stateMgr), gameScore(score), player(ship), objectManager(objMgr) {
 }
 
 void UIRenderer::DrawCurrentState() const {
@@ -47,14 +47,41 @@ void UIRenderer::DrawMainMenu() const {
 void UIRenderer::DrawInGame() const {
     DrawCheckeredBackground();
 
-    // Game UI
+    // Zeichne alle Spielobjekte
+    DrawGameObjects();
+
+    // Zeichne UI (Score, Lives, Level)
     DrawRectangle(5, 5, 200, 100, Color{ 0, 0, 0, 150 });
     DrawText(TextFormat("SCORE: %d", gameScore.GetScore()), 10, 10, 20, WHITE);
-    DrawText(TextFormat("LIVES: %d", 3), 10, 40, 20, WHITE); // TODO: Get actual lives
+    DrawText(TextFormat("LIVES: %d", player.GetLives()), 10, 40, 20, WHITE);
     DrawText(TextFormat("LEVEL: %d", gameScore.GetLevel()), 10, 70, 20, WHITE);
 }
 
+void UIRenderer::DrawGameObjects() const {
+    // Zeichne das Raumschiff
+    player.Draw();
+
+    // Zeichne alle Projektile
+    for (const auto& projectile : objectManager.GetProjectiles()) {
+        projectile.Draw();
+    }
+
+    // Zeichne alle Asteroiden
+    for (const auto& asteroid : objectManager.GetAsteroids()) {
+        asteroid.Draw();
+    }
+
+    // PowerUps - falls GetPowerUps() in ObjectManager implementiert ist
+    // Entkommentiere diese Zeilen wenn GetPowerUps() verfügbar ist:
+    /*
+    for (const auto& powerup : objectManager.GetPowerUps()) {
+        powerup.Draw();
+    }
+    */
+}
+
 void UIRenderer::DrawGameOver() const {
+    ClearBackground(BLACK);
     DrawText("GAME OVER", SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT / 2 - 50, 30, RED);
     DrawText(TextFormat("SCORE: %d", gameScore.GetScore()),
         SCREEN_WIDTH / 2 - 60, SCREEN_HEIGHT / 2, 20, WHITE);

@@ -1,7 +1,7 @@
 ﻿#include "game.h"
+#include "globals.h"
 
 Game::Game() :
-    gameRunning(true),
     projectileCooldown(0),
     asteroidSpawnTimer(0),
     currentItem(0),
@@ -13,9 +13,9 @@ Game::Game() :
     gameScore(),
     objectManager(player),
     collisionSystem(objectManager, gameScore),
-    inputHandler(stateManager, objectManager, projectileCooldown,
+    inputHandler(*this, stateManager, objectManager, projectileCooldown,
         currentItem, hasRapid, amountRapid, hasShield),
-    uiRenderer(stateManager, gameScore) {
+    uiRenderer(stateManager, gameScore, player, objectManager) {
     InitGameSounds();
 }
 
@@ -25,6 +25,7 @@ Game::~Game() {
 }
 
 void Game::Initialize() {
+    gameRunning = true;
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Asteroids");
     SetTargetFPS(60);
     objectManager.SpawnAsteroids(4);

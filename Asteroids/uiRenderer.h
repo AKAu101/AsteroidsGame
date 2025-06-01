@@ -3,14 +3,18 @@
 
 #include "gamestate.h"
 #include "score.h"
+#include "spaceship.h"
+#include "objectmanager.h"
 
 class UIRenderer {
 private:
     GameStateManager& stateManager;
     Score& gameScore;
+    Spaceship& player;
+    ObjectManager& objectManager;
 
 public:
-    UIRenderer(GameStateManager& stateMgr, Score& score);
+    UIRenderer(GameStateManager& stateMgr, Score& score, Spaceship& ship, ObjectManager& objMgr);
 
     void DrawCurrentState() const;
 
@@ -19,6 +23,7 @@ private:
     void DrawMainMenu() const;
     void DrawInGame() const;
     void DrawGameOver() const;
+    void DrawGameObjects() const;
 };
 
 #endif

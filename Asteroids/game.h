@@ -12,7 +12,6 @@
 
 class Game {
 private:
-    bool gameRunning;
     float projectileCooldown;
     float asteroidSpawnTimer;
     int currentItem;
@@ -20,6 +19,7 @@ private:
     bool hasRapid;
     bool hasShield;
     Sound shootSound;
+    bool gameRunning = true;
 
     // Game objects
     Spaceship player;
@@ -35,21 +35,11 @@ private:
 public:
     Game();
     ~Game();
-
     void Initialize();
     void Update();
     void Draw();
-    bool ShouldClose()
-    {
-        if (gameRunning == false)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
+    bool IsGameRunning() const { return gameRunning; }
+    void SetGameRunning(bool running) { gameRunning = running; }
 
 private:
     void InitGameSounds();

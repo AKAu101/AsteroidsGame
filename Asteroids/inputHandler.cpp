@@ -1,10 +1,12 @@
 #include "inputhandler.h"
 #include "objectManager.h"
-#include "game.h"
+#include "globals.h"
+#include "game.h" 
 
-InputHandler::InputHandler(GameStateManager& stateMgr, ObjectManager& objMgr,
+InputHandler::InputHandler(Game& gameRef, GameStateManager& stateMgr, ObjectManager& objMgr,
     float& projCooldown, int& item, bool& rapid,
     int& rapidAmount, bool& shield) :
+    game(gameRef),
     stateManager(stateMgr),
     objectManager(objMgr),
     projectileCooldown(projCooldown),
@@ -47,7 +49,7 @@ void InputHandler::HandleMainMenuInput() {
         switch (stateManager.GetMenuSelection()) {
         case 0: stateManager.SetState(IN_GAME); break;
         case 1: stateManager.SetState(OPTIONS); break;
-        case 2: gameRunning = false; break;
+        case 2: game.SetGameRunning(false); break;
         }
     }
 }

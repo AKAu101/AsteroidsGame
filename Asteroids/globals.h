@@ -64,4 +64,5 @@ static const Color MSPAINT_COLORS[16] = {
     {128, 0, 128, 255},   // Dunkelmagenta
     {255, 0, 255, 255}    // Magenta
 };
+
 #endif

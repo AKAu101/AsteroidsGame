@@ -1,20 +1,17 @@
 #include "game.h"
 #include "gamestate.h"
+#include "game.h"
 
 int main() {
-    // Create game instance
-    Game asteroids;
+    Game game;
+    game.Initialize();
 
-    // Initialize the game
-    asteroids.Initialize();
-
-    // Main game loop
-    while (!WindowShouldClose() && !asteroids.ShouldClose()) {
-        asteroids.Update();
-        asteroids.Draw();
+    // Hauptschleife - hier ist der wichtige Teil!
+    while (!WindowShouldClose() && game.IsGameRunning()) {
+        game.Update();
+        game.Draw();
     }
 
-    // Cleanup
     CloseWindow();
     return 0;
 }
