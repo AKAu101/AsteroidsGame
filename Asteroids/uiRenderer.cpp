@@ -46,7 +46,7 @@ void UIRenderer::DrawCurrentState() const {
         DrawCreditsScreen();
         break;
     default:
-        DrawMainMenu(); // Fallback
+        DrawMainMenu();
         break;
     }
 }
@@ -70,12 +70,11 @@ void UIRenderer::DrawCheckeredBackground() const {
     }
 }
 
-/**
- * Renders the main menu with MS Paint-style aesthetic
- * Features animated title, colored menu buttons, decorative elements
- * Includes flying spaceships, asteroids, and various visual effects
- * Supports 5 menu options with visual feedback for selection
- */
+  /**
+   * Renders the main menu with MS Paint-style aesthetic
+   * Features animated title, colored menu buttons, and organized decorative elements
+   * Better utilizes the space below buttons with structured game preview
+   */
 void UIRenderer::DrawMainMenu() const {
     // Animation time for various effects
     static float animTime = 0;
@@ -121,7 +120,7 @@ void UIRenderer::DrawMainMenu() const {
     DrawRectangleLines(50, 160, SCREEN_WIDTH - 100, 300, BLACK);
     DrawRectangleLines(49, 159, SCREEN_WIDTH - 98, 302, WHITE);
 
-    // Menu options with animated buttons (now 5 options)
+    // Menu options with animated buttons (5 options)
     const char* items[] = { "START GAME", "CONTROLS", "HIGHSCORES", "CREDITS", "QUIT" };
     Color itemColors[] = {
         Color{100, 255, 100, 255},   // Green for Start Game
@@ -134,7 +133,7 @@ void UIRenderer::DrawMainMenu() const {
     int menuItemHeight = 55;
     int menuItemWidth = 280;
 
-    for (int i = 0; i < 5; i++) {  // Changed to 5 options
+    for (int i = 0; i < 5; i++) {
         int itemY = menuStartY + i * menuItemHeight;
         int itemX = SCREEN_WIDTH / 2 - menuItemWidth / 2;
 
@@ -168,171 +167,179 @@ void UIRenderer::DrawMainMenu() const {
         DrawText(items[i], itemX + (menuItemWidth - textWidth) / 2 + buttonOffset, itemY + 13 + buttonOffset, textSize, textColor);
     }
 
-    // Decorative elements - Cooler animated game elements
+    // Game preview background area
+    int previewAreaY = 480;
+    int previewAreaHeight = SCREEN_HEIGHT - previewAreaY - 80;
+    DrawRectangle(20, previewAreaY, SCREEN_WIDTH - 40, previewAreaHeight, Color{ 230, 230, 250, 255 });
+    DrawRectangleLines(20, previewAreaY, SCREEN_WIDTH - 40, previewAreaHeight, BLACK);
 
-    // Animated mini-spaceship (left) flying around the buttons
-    float shipAngle = animTime * 30.0f; // Slow rotation
-    int shipCenterX = 150;
-    int shipCenterY = 320;
-    int shipRadius = 80;
-    int shipX = (int)(shipCenterX + cosf(shipAngle * DEG2RAD) * shipRadius);
-    int shipY = (int)(shipCenterY + sinf(shipAngle * DEG2RAD) * shipRadius);
+    // Preview title
+    const char* previewTitle = "GAME PREVIEW";
+    int previewTitleWidth = MeasureText(previewTitle, 20);
+    DrawText(previewTitle, SCREEN_WIDTH / 2 - previewTitleWidth / 2, previewAreaY + 10, 20, Color{ 80, 80, 80, 255 });
 
-    // Mini-spaceship with thrust effect
-    DrawTriangle(
-        Vector2{ (float)shipX, (float)shipY - 8 },      // Tip
-        Vector2{ (float)shipX - 6, (float)shipY + 6 },  // Left
-        Vector2{ (float)shipX + 6, (float)shipY + 6 },  // Right
-        Color{ 100, 100, 255, 255 }
-    );
+    // Organized game elements in sections
+    int sectionY = previewAreaY + 40;
+    int sectionHeight = previewAreaHeight - 50;
+
+    // Left section: Spaceship demonstration
+    int leftSectionX = 40;
+    int leftSectionWidth = (SCREEN_WIDTH - 80) / 3;
+
+    DrawRectangleLines(leftSectionX, sectionY, leftSectionWidth, sectionHeight, GRAY);
+
+    // Demo spaceship in center of left section
+    int shipCenterX = leftSectionX + leftSectionWidth / 2;
+    int shipCenterY = sectionY + sectionHeight / 2;
+
+    // Rotating spaceship
+    float shipRotation = animTime * 45.0f; // Slow rotation
+    Vector2 shipPos = { (float)shipCenterX, (float)shipCenterY };
+
+    // Spaceship with thrust
+    float shipRad = shipRotation * DEG2RAD;
+    Vector2 tip = { shipPos.x + cosf(shipRad) * 15, shipPos.y + sinf(shipRad) * 15 };
+    Vector2 left = { shipPos.x + cosf(shipRad + 2.4f) * 12, shipPos.y + sinf(shipRad + 2.4f) * 12 };
+    Vector2 right = { shipPos.x + cosf(shipRad - 2.4f) * 12, shipPos.y + sinf(shipRad - 2.4f) * 12 };
+
+    DrawTriangle(tip, left, right, Color{ 100, 150, 255, 255 });
+    DrawTriangleLines(tip, left, right, BLACK);
+
     // Thrust particles
-    for (int i = 0; i < 3; i++) {
-        int particleX = shipX + GetRandomValue(-2, 2);
-        int particleY = shipY + 8 + i * 3;
-        DrawCircle(particleX, particleY, 1, Color{ 255, 150, 0, (unsigned char)(200 - i * 60) });
+    Vector2 thrustBase = { (left.x + right.x) * 0.5f, (left.y + right.y) * 0.5f };
+    Vector2 thrustDir = { shipPos.x - tip.x, shipPos.y - tip.y };
+    float thrustLen = sqrtf(thrustDir.x * thrustDir.x + thrustDir.y * thrustDir.y);
+    if (thrustLen > 0) {
+        thrustDir.x /= thrustLen;
+        thrustDir.y /= thrustLen;
     }
 
-    // Large flying asteroids that fly around EVERYTHING (except buttons)
     for (int i = 0; i < 5; i++) {
-        float astAngle = animTime * (20.0f + i * 5.0f) + i * 72.0f; // Different speeds
-        float astRadius = 150.0f + i * 30.0f; // Different orbits
+        Vector2 particle = {
+            thrustBase.x + thrustDir.x * (15 + i * 3) + GetRandomValue(-2, 2),
+            thrustBase.y + thrustDir.y * (15 + i * 3) + GetRandomValue(-2, 2)
+        };
+        Color particleColor = (i % 2 == 0) ? ORANGE : RED;
+        particleColor.a = 255 - i * 40;
+        DrawCircleV(particle, 2.0f - i * 0.3f, particleColor);
+    }
 
-        // Center of elliptical orbit
-        int centerX = SCREEN_WIDTH / 2;
-        int centerY = SCREEN_HEIGHT / 2;
+    // Spaceship label
+    const char* shipLabel = "SPACESHIP";
+    int shipLabelWidth = MeasureText(shipLabel, 12);
+    DrawText(shipLabel, shipCenterX - shipLabelWidth / 2, sectionY + sectionHeight - 20, 12, BLACK);
 
-        // Elliptical orbits for more variation
-        float radiusX = astRadius + 50.0f;
-        float radiusY = astRadius;
+    // Middle section: Asteroids demonstration
+    int middleSectionX = leftSectionX + leftSectionWidth + 10;
+    int middleSectionWidth = leftSectionWidth;
 
-        int astX = (int)(centerX + cosf(astAngle * DEG2RAD) * radiusX);
-        int astY = (int)(centerY + sinf(astAngle * DEG2RAD) * radiusY);
+    DrawRectangleLines(middleSectionX, sectionY, middleSectionWidth, sectionHeight, GRAY);
 
-        // Check if asteroid is in button area (adjusted for 5 buttons)
-        bool inButtonArea = (astY > 160 && astY < 460 && astX > 200 && astX < SCREEN_WIDTH - 200);
+    // 3 different sized asteroids
+    int asteroidCenterX = middleSectionX + middleSectionWidth / 2;
+    int asteroidCenterY = sectionY + sectionHeight / 2;
 
-        if (!inButtonArea) {
-            float sizePulse = 1.0f + 0.4f * sinf(animTime * 2.0f + i * 1.2f);
-            int asteroidSize = (int)((12 + i * 2) * sizePulse);
+    Color asteroidColors[] = { Color{200, 100, 50, 255}, Color{150, 75, 150, 255}, Color{100, 150, 200, 255} };
+    int asteroidSizes[] = { 25, 18, 12 };
 
-            Color astColors[] = {
-                Color{200, 100, 50, 255},   // Orange
-                Color{150, 75, 150, 255},   // Purple  
-                Color{100, 150, 200, 255},  // Blue
-                Color{200, 150, 100, 255},  // Brown
-                Color{150, 200, 150, 255}   // Green
-            };
+    for (int i = 0; i < 3; i++) {
+        float angle = animTime * (30.0f + i * 15.0f) + i * 120.0f;
+        int astX = asteroidCenterX + (int)(cosf(angle * DEG2RAD) * (30 + i * 15));
+        int astY = asteroidCenterY + (int)(sinf(angle * DEG2RAD) * 20);
 
-            // Asteroid with rotation
-            float rotAngle = animTime * 50.0f + i * 30.0f;
+        Vector2 astPos = { (float)astX, (float)astY };
+        float astRadius = (float)asteroidSizes[i];
+        float rotation = animTime * (50.0f + i * 20.0f);
+        int segments = 12;
 
-            // Main asteroid
-            DrawCircle(astX, astY, (float)asteroidSize, astColors[i]);
-            DrawCircleLines(astX, astY, (float)asteroidSize, BLACK);
+        // Draw asteroid as polygon (same as in game)
+        DrawPoly(astPos, segments, astRadius, rotation, asteroidColors[i]);
 
-            // Small details on asteroids
-            int detailX = (int)(astX + cosf(rotAngle * DEG2RAD) * (float)asteroidSize * 0.3f);
-            int detailY = (int)(astY + sinf(rotAngle * DEG2RAD) * (float)asteroidSize * 0.3f);
+        // Draw outline with individual line segments (same as in game)
+        for (int j = 0; j < segments; j++) {
+            float angle1 = (j * 360.0f / segments + rotation) * DEG2RAD;
+            float angle2 = ((j + 1) * 360.0f / segments + rotation) * DEG2RAD;
 
-            // Safe color calculation for details
-            unsigned char detailR = (unsigned char)SafeMax(0.0f, (float)(astColors[i].r - 30));
-            unsigned char detailG = (unsigned char)SafeMax(0.0f, (float)(astColors[i].g - 30));
-            unsigned char detailB = (unsigned char)SafeMax(0.0f, (float)(astColors[i].b - 30));
+            Vector2 p1 = { astPos.x + cosf(angle1) * astRadius, astPos.y + sinf(angle1) * astRadius };
+            Vector2 p2 = { astPos.x + cosf(angle2) * astRadius, astPos.y + sinf(angle2) * astRadius };
 
-            DrawCircle(detailX, detailY, (float)(asteroidSize / 4), Color{ detailR, detailG, detailB, 255 });
-
-            // Sparkle effect around asteroids
-            if ((int)(animTime * 6.0f + i * 2.0f) % 4 == 0) {
-                for (int sparkle = 0; sparkle < 3; sparkle++) {
-                    int sparkleX = astX + GetRandomValue(-asteroidSize - 5, asteroidSize + 5);
-                    int sparkleY = astY + GetRandomValue(-asteroidSize - 5, asteroidSize + 5);
-                    DrawPixel(sparkleX, sparkleY, WHITE);
-                }
-            }
+            DrawLineEx(p1, p2, 2.0f, BLACK);
         }
     }
 
-    // Animated projectiles flying between elements
-    for (int i = 0; i < 4; i++) {
-        float bulletTime = animTime * 2.0f + i * 1.5f;
-        int startX = 200;
-        int endX = SCREEN_WIDTH - 200;
-        int bulletX = (int)(startX + (endX - startX) * (sinf(bulletTime) * 0.5f + 0.5f));
-        int bulletY = 250 + i * 40 + (int)(sinf(bulletTime * 3.0f) * 20.0f);
+    // Asteroids label
+    const char* astLabel = "ASTEROIDS";
+    int astLabelWidth = MeasureText(astLabel, 12);
+    DrawText(astLabel, asteroidCenterX - astLabelWidth / 2, sectionY + sectionHeight - 20, 12, BLACK);
 
-        // Trail effect for projectiles
-        for (int j = 0; j < 5; j++) {
-            int trailX = bulletX - j * 8;
-            unsigned char trailAlpha = (unsigned char)SafeMax(0.0f, (float)(255 - j * 50));
-            DrawCircle(trailX, bulletY, 2.0f - (float)j * 0.3f, Color{ 255, 255, 100, trailAlpha });
-        }
+    // Right section: Power-ups demonstration
+    int rightSectionX = middleSectionX + middleSectionWidth + 10;
+    int rightSectionWidth = leftSectionWidth;
 
-        DrawRectangle(bulletX - 2, bulletY - 4, 4, 8, BLACK);
-    }
+    DrawRectangleLines(rightSectionX, sectionY, rightSectionWidth, sectionHeight, GRAY);
 
-    // Power-up icons gently floating up and down
-    int powerUpX = 80;
-    int powerUpStartY = 480;
+    // Power-ups arranged vertically
     const char* powerUpLabels[] = { "RAPID", "SHIELD", "LIFE" };
     Color powerUpColors[] = { RED, BLUE, GREEN };
 
+    int powerUpStartY = sectionY + 20;
+    int powerUpSpacing = (sectionHeight - 60) / 3;
+
     for (int i = 0; i < 3; i++) {
-        float floatOffset = sinf(animTime * 2.0f + i * 2.0f) * 8.0f;
-        int powerUpY = (int)(powerUpStartY + i * 35 + floatOffset);
+        int powerUpX = rightSectionX + rightSectionWidth / 2;
+        int powerUpY = powerUpStartY + i * powerUpSpacing;
+
+        // Gentle floating animation
+        float floatOffset = sinf(animTime * 2.0f + i * 2.0f) * 3.0f;
+        powerUpY += (int)floatOffset;
 
         // Power-up box
-        DrawRectangle(powerUpX - 15, powerUpY - 8, 30, 16, powerUpColors[i]);
-        DrawRectangleLines(powerUpX - 15, powerUpY - 8, 30, 16, BLACK);
+        DrawRectangle(powerUpX - 25, powerUpY - 10, 50, 20, powerUpColors[i]);
+        DrawRectangleLines(powerUpX - 25, powerUpY - 10, 50, 20, BLACK);
 
         // Power-up text
-        int textWidth = MeasureText(powerUpLabels[i], 8);
-        DrawText(powerUpLabels[i], powerUpX - textWidth / 2, powerUpY - 4, 8, WHITE);
+        int textWidth = MeasureText(powerUpLabels[i], 10);
+        DrawText(powerUpLabels[i], powerUpX - textWidth / 2, powerUpY - 5, 10, WHITE);
 
-        // Sparkle effect
-        if ((int)(animTime * 5.0f + i) % 3 == 0) {
-            DrawPixel(powerUpX + GetRandomValue(-20, 20), powerUpY + GetRandomValue(-15, 15), YELLOW);
+        // Gentle glow effect
+        if ((int)(animTime * 3.0f + i) % 6 == 0) {
+            DrawPixel(powerUpX + GetRandomValue(-30, 30), powerUpY + GetRandomValue(-15, 15), YELLOW);
         }
     }
 
-    // Twinkling stars in background  
-    for (int i = 0; i < 25; i++) {
-        int starX = 30 + (i * 37) % (SCREEN_WIDTH - 60);
-        int starY = 150 + (i * 23) % (SCREEN_HEIGHT - 180);
+    // Power-ups label
+    const char* powerLabel = "POWER-UPS";
+    int powerLabelWidth = MeasureText(powerLabel, 12);
+    DrawText(powerLabel, rightSectionX + rightSectionWidth / 2 - powerLabelWidth / 2, sectionY + sectionHeight - 20, 12, BLACK);
 
-        // Stars avoid button area (adjusted for 5 buttons)
-        if (starX > 200 && starX < SCREEN_WIDTH - 200 && starY > 150 && starY < 460) continue;
+    // Projectiles flying across sections (connecting element)
+    for (int i = 0; i < 2; i++) {
+        float bulletProgress = fmod(animTime * 0.5f + i * 0.5f, 1.0f);
+        int bulletX = 40 + (int)(bulletProgress * (SCREEN_WIDTH - 80));
+        int bulletY = sectionY + 30 + i * (sectionHeight - 60);
 
-        float twinkle = sinf(animTime * 4.0f + (float)i * 0.8f);
-        if (twinkle > 0.3f) {
-            unsigned char alpha = (unsigned char)SafeMin(255.0f, SafeMax(0.0f, 100.0f + twinkle * 155.0f));
-            unsigned char alphaHalf = (unsigned char)(alpha * 0.5f);
-            DrawPixel(starX, starY, Color{ 255, 255, 255, alpha });
-            DrawPixel(starX - 1, starY, Color{ 200, 200, 255, alphaHalf });
-            DrawPixel(starX + 1, starY, Color{ 200, 200, 255, alphaHalf });
-            DrawPixel(starX, starY - 1, Color{ 200, 200, 255, alphaHalf });
-            DrawPixel(starX, starY + 1, Color{ 200, 200, 255, alphaHalf });
+        // Trail effect
+        for (int j = 0; j < 3; j++) {
+            int trailX = bulletX - j * 12;
+            unsigned char alpha = (unsigned char)(255 - j * 80);
+            DrawCircle(trailX, bulletY, 2.0f - j * 0.5f, Color{ 255, 255, 100, alpha });
         }
+
+        DrawRectangle(bulletX - 2, bulletY - 2, 4, 4, BLACK);
     }
 
     // Control hints in MS Paint style
-    DrawRectangle(20, SCREEN_HEIGHT - 80, SCREEN_WIDTH - 40, 60, Color{ 255, 255, 200, 255 });
-    DrawRectangleLines(20, SCREEN_HEIGHT - 80, SCREEN_WIDTH - 40, 60, BLACK);
+    DrawRectangle(20, SCREEN_HEIGHT - 70, SCREEN_WIDTH - 40, 50, Color{ 255, 255, 200, 255 });
+    DrawRectangleLines(20, SCREEN_HEIGHT - 70, SCREEN_WIDTH - 40, 50, BLACK);
 
     const char* controls = "Use UP/DOWN arrows or W/S to navigate, ENTER to select, ESC to quit";
-    int controlsWidth = MeasureText(controls, 16);
-    DrawText(controls, SCREEN_WIDTH / 2 - controlsWidth / 2, SCREEN_HEIGHT - 60, 16, Color{ 80, 80, 80, 255 });
+    int controlsWidth = MeasureText(controls, 14);
+    DrawText(controls, SCREEN_WIDTH / 2 - controlsWidth / 2, SCREEN_HEIGHT - 55, 14, Color{ 80, 80, 80, 255 });
 
-    // Version info
-    const char* version = "v2.0 - Enhanced MS Paint Edition";
+    // Version info (inside the control box, properly spaced)
+    const char* version = "v1.0 - Asteroids MS Paint Edition";
     int versionWidth = MeasureText(version, 12);
     DrawText(version, SCREEN_WIDTH / 2 - versionWidth / 2, SCREEN_HEIGHT - 35, 12, Color{ 120, 120, 120, 255 });
-
-    // Blinking "Press any key" effect
-    if ((int)(animTime * 3.0f) % 2 == 0) {
-        const char* pressKey = "~ Made with love in MS Paint style ~";
-        int pressKeyWidth = MeasureText(pressKey, 14);
-        DrawText(pressKey, SCREEN_WIDTH / 2 - pressKeyWidth / 2, SCREEN_HEIGHT - 15, 14, Color{ 160, 80, 200, 255 });
-    }
 }
 
 /**

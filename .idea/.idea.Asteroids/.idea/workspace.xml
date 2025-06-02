@@ -9,10 +9,10 @@
   <component name="ChangeListManager">
     <list default="true" id="62a7be67-dfd2-49f6-9bdc-8de21c219c6f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Asteroids/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Asteroids/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/collisionSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/collisionSystem.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/globals.h" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/globals.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/inputHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/inputHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/objectManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/objectManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Asteroids/highscore.dat" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/highscore.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Asteroids/highscores.dat" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/highscores.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Asteroids/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Asteroids/uiRenderer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/uiRenderer.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -88,6 +88,7 @@
       <workItem from="1748696576230" duration="6061000" />
       <workItem from="1748702690188" duration="1319000" />
       <workItem from="1748858738286" duration="3538000" />
+      <workItem from="1748880638029" duration="763000" />
     </task>
     <servers />
   </component>
