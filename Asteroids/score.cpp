@@ -17,7 +17,7 @@ Score::Score() {
     highScore = 0;
     level = 1;
     LoadHighScore();
-    g_currentScore = 0; // Initialize global variable
+    g_currentScore = 0;
 }
 
 /**

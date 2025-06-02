@@ -42,18 +42,20 @@ void ObjectManager::UpdateObjects(float deltaTime) {
     // Check power-up spawning
     CheckPowerUpSpawning(deltaTime);
 
-    // Remove inactive objects
-    projectiles.erase(
-        std::remove_if(projectiles.begin(), projectiles.end(),
-            [](const Projectile& p) { return !p.IsActive(); }),
-        projectiles.end()
-    );
 
-    powerups.erase(
-        std::remove_if(powerups.begin(), powerups.end(),
-            [](const PowerUp& p) { return !p.IsActive(); }),
-        powerups.end()
-    );
+    // Remove inactive projectiles
+    for (int i = projectiles.size() - 1; i >= 0; i--) {
+        if (!projectiles[i].IsActive()) {
+            projectiles.erase(projectiles.begin() + i);
+        }
+    }
+
+    // Remove inactive power-ups
+    for (int i = powerups.size() - 1; i >= 0; i--) {
+        if (!powerups[i].IsActive()) {
+            powerups.erase(powerups.begin() + i);
+        }
+    }
 }
 
 /**

@@ -9,13 +9,9 @@
   <component name="ChangeListManager">
     <list default="true" id="62a7be67-dfd2-49f6-9bdc-8de21c219c6f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Asteroids/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Asteroids/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/Asteroids.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/Asteroids.vcxproj.filters" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/asteroid.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/asteroid.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/game.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/game.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/gamestate.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/gamestate.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/highscoreManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/highscoreManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Asteroids/collisionSystem.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/collisionSystem.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Asteroids/globals.h" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/globals.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Asteroids/inputHandler.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/inputHandler.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Asteroids/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/main.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Asteroids/objectManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Asteroids/objectManager.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -91,7 +87,7 @@
       <workItem from="1748696055856" duration="516000" />
       <workItem from="1748696576230" duration="6061000" />
       <workItem from="1748702690188" duration="1319000" />
-      <workItem from="1748858738286" duration="1721000" />
+      <workItem from="1748858738286" duration="3538000" />
     </task>
     <servers />
   </component>

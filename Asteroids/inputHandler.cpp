@@ -82,7 +82,7 @@ void InputHandler::HandleMainMenuInput() {
     if (IsKeyPressed(KEY_ENTER)) {
         switch (stateManager.GetMenuSelection()) {
         case 0: // START GAME
-            game.ResetGame(); // IMPORTANT: Reset game before starting!
+            game.ResetGame(); // Reset game before starting!
             stateManager.SetState(IN_GAME);
             break;
         case 1: // CONTROLS
@@ -187,12 +187,6 @@ void InputHandler::HandleGameOverInput() {
     if (IsKeyPressed(KEY_ESCAPE)) {
         game.SetGameRunning(false);
     }
-
-    // Quick restart
-    if (IsKeyPressed(KEY_R)) {
-        game.ResetGame(); // IMPORTANT: Reset game on quick restart!
-        stateManager.SetState(IN_GAME);
-    }
 }
 
 /**
@@ -280,8 +274,8 @@ void InputHandler::HandleNameEntryInput() {
         stateManager.SetState(HIGHSCORE_DISPLAY);
     }
 
-    // ESC - cancel (use default name)
-    if (IsKeyPressed(KEY_ESCAPE)) {
+    // TAB - cancel (use default name)
+    if (IsKeyPressed(KEY_TAB)) {
         stateManager.SetPlayerName("ANON_");
         game.AddHighscoreEntry("ANON_", stateManager.GetNameEntryScore());
         stateManager.SetState(HIGHSCORE_DISPLAY);
@@ -290,10 +284,10 @@ void InputHandler::HandleNameEntryInput() {
 
 /**
  * Handles input for the highscore display screen
- * Simple input handling that returns to main menu on ENTER or ESC
+ * Simple input handling that returns to main menu on ENTER or TAB
  */
 void InputHandler::HandleHighscoreDisplayInput() {
-    if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_ESCAPE)) {
+    if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_TAB)) {
         stateManager.SetState(MAIN_MENU);
     }
 }
@@ -307,29 +301,23 @@ void InputHandler::HandleHighscoreDisplayInput() {
 void InputHandler::UseItem() {
     auto& player = objectManager.GetPlayer();
 
-    printf("UseItem called! currentItem = %d\n", currentItem);
-
     switch (currentItem) {
     case 0: // No item
-        printf("No item to use\n");
         break;
 
     case 1: // Rapid Fire
-        printf("Activating RAPID FIRE!\n");
         hasRapid = true;
         amountRapid = 50;
         currentItem = 0;
         break;
 
     case 2: // Shield
-        printf("Activating SHIELD!\n");
         hasShield = true;
         player.ActivateShield();
         currentItem = 0;
         break;
 
     case 3: // Extra Life
-        printf("Adding extra life\n");
         player.AddLife();
         currentItem = 0;
         break;

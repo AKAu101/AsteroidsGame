@@ -17,7 +17,7 @@
 
 // Projectile constants
 #define PROJECTILE_SPEED 400.0f     // Projectile movement speed in pixels per second
-#define PROJECTILE_LIFETIME 3.0f    // Time in seconds before projectile expires
+#define PROJECTILE_LIFETIME 1.5f    // Time in seconds before projectile expires
 
 // Asteroid constants
 #define ASTEROID_MIN_SPEED 50.0f    // Minimum asteroid movement speed in pixels per second

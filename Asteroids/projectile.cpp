@@ -66,7 +66,7 @@ void Projectile::Update(float deltaTime) {
 void Projectile::Draw() const {
     if (!active) return;
 
-    // Black rectangle for better visibility
+    // Black rectangle
     Rectangle rect = {
         position.x - 2.0f,  // Centered horizontally
         position.y - 6.0f,  // 6 pixels upward offset

@@ -46,14 +46,14 @@ void Asteroid::Spawn(Vector2 pos, AsteroidSize asteroidSize) {
     float maxSpeed = baseMaxSpeed * speedMultiplier;
 
     // Set random movement with progressive speed
-    float speed = minSpeed + (float)(rand() % (int)(maxSpeed - minSpeed + 1));
-    float angle = (float)(rand() % 360) * WINKEL2GRAD;
+    float speed = minSpeed + static_cast<float>(rand() % static_cast<int>(maxSpeed - minSpeed + 1));
+    float angle = static_cast<float>(rand() % 360) * WINKEL2GRAD;
     velocity.x = cosf(angle) * speed;
     velocity.y = sinf(angle) * speed;
 
     // Set random rotation (also faster with progression)
     rotation = 0.0f;
-    rotationSpeed = ((float)(rand() % 100 - 50) / 10.0f) * speedMultiplier;
+    rotationSpeed = (static_cast<float>(rand() % 100 - 50) / 10.0f) * speedMultiplier;
 
     // Assign random color
     colorIndex = rand() % NUM_ASTEROID_COLORS;

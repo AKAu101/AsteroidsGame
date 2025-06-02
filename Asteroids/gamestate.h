@@ -103,7 +103,7 @@ public:
     static const char* GetStateName(GameState state /* Game state to get name for */);
 };
 
-// Utility functions for C-style interface (if needed)
+// Utility functions for interface
 namespace GameStateUtils {
     void Initialize();
     void SetState(GameState newState /* Target state to transition to */);
