@@ -1,12 +1,16 @@
 #include "spaceship.h"
 #include "globals.h"
-#include "utils.h"
 #include <cmath>
 
-// Mathematische Konstanten
-constexpr float DEG120 = 2.0943951f; // 120° in Rad
-constexpr float DEG240 = 4.1887902f; // 240° in Rad
+// Mathematical constants
+constexpr float DEG120 = 2.0943951f; // 120° in radians
+constexpr float DEG240 = 4.1887902f; // 240° in radians
 
+/**
+ * Constructor for Spaceship class
+ * Initializes spaceship properties including triangle size, lives, and shield state
+ * Calls Reset() to set initial position and movement values
+ */
 Spaceship::Spaceship() :
     triangleSize(15.0f),
     lives(STARTING_LIVES),
@@ -17,13 +21,17 @@ Spaceship::Spaceship() :
     Reset();
 }
 
+/**
+ * Resets the spaceship to its initial state
+ * Sets position to screen center, clears velocity and rotation
+ * Preserves invulnerability state when called from LoseLife()
+ * Deactivates shield and resets associated timers
+ */
 void Spaceship::Reset() {
     position = { SCREEN_WIDTH / 2.0f, SCREEN_HEIGHT / 2.0f };
     velocity = { 0.0f, 0.0f };
     rotation = 0.0f;
     isThrusting = false;
-    // WICHTIG: invulnerable und invulnerabilityTimer NICHT zurücksetzen!
-    // Diese werden in LoseLife() bereits gesetzt
     thrustCooldown = 0.0f;
     shieldActive = false;
     shieldTimer = 0.0f;
@@ -31,20 +39,27 @@ void Spaceship::Reset() {
     UpdateTriangleGeometry();
 }
 
+/**
+ * Updates the spaceship's state each frame
+ * Handles movement, screen wrapping, velocity dampening, and status timers
+ * Updates invulnerability, thrust cooldown, and shield systems
+ * Recalculates triangle geometry for rendering and collision
+ * @param deltaTime Time elapsed since last frame in seconds
+ */
 void Spaceship::Update(float deltaTime) {
-    // Bewegung
+    // Movement
     position.x += velocity.x * deltaTime;
     position.y += velocity.y * deltaTime;
 
-    // Bildschirmbegrenzung
+    // Screen boundaries with wrapping
     position.x = fmodf(position.x + SCREEN_WIDTH, SCREEN_WIDTH);
     position.y = fmodf(position.y + SCREEN_HEIGHT, SCREEN_HEIGHT);
 
-    // Reibung
+    // Friction/dampening
     velocity.x *= 0.99f;
     velocity.y *= 0.99f;
 
-    // Statusupdates
+    // Status updates
     if (invulnerable) {
         invulnerabilityTimer -= deltaTime;
         if (invulnerabilityTimer <= 0.0f) invulnerable = false;
@@ -54,7 +69,7 @@ void Spaceship::Update(float deltaTime) {
         thrustCooldown -= deltaTime;
     }
 
-    // Schild-Update
+    // Shield update
     if (shieldActive) {
         shieldTimer -= deltaTime;
         shieldAnimationTimer += deltaTime;
@@ -68,53 +83,65 @@ void Spaceship::Update(float deltaTime) {
     UpdateTriangleGeometry();
 }
 
+/**
+ * Updates the triangle geometry based on current position and rotation
+ * Calculates the three vertices of the spaceship triangle
+ * Uses rotation matrix math for proper orientation
+ * Called whenever position or rotation changes
+ */
 void Spaceship::UpdateTriangleGeometry() {
     const float rad = rotation * DEG2RAD;
     const float cosRot = cosf(rad);
     const float sinRot = sinf(rad);
 
-    // Spitze (vorwärts)
+    // Tip (forward point)
     trianglePoints[0] = {
         position.x + cosRot * triangleSize,
         position.y + sinRot * triangleSize
     };
 
-    // Linker Punkt
+    // Left point
     trianglePoints[1] = {
         position.x + (cosRot * cosf(DEG120) - sinRot * sinf(DEG120)) * triangleSize,
         position.y + (sinRot * cosf(DEG120) + cosRot * sinf(DEG120)) * triangleSize
     };
 
-    // Rechter Punkt
+    // Right point
     trianglePoints[2] = {
         position.x + (cosRot * cosf(DEG240) - sinRot * sinf(DEG240)) * triangleSize,
         position.y + (sinRot * cosf(DEG240) + cosRot * sinf(DEG240)) * triangleSize
     };
 }
 
+/**
+ * Renders the spaceship with shield effects and thrust particles
+ * Handles invulnerability blinking, shield visualization, and thrust effects
+ * Draws shield first (behind spaceship), then spaceship with optional blinking
+ * Creates particle effects for thrust when active
+ */
 void Spaceship::Draw() const {
-    // Schild zeichnen (vor dem Raumschiff) - ohne Flackern
+    // Draw shield (in front of spaceship) - without flickering
     if (shieldActive) {
-        float shieldRadius = triangleSize + 8.0f; // Etwas größer als das Raumschiff
+        float shieldRadius = triangleSize + 8.0f;
 
-        // Konstante Transparenz - kein Pulsieren
+        // Constant transparency - no pulsing
         Color shieldColor = BLUE;
-        shieldColor.a = 100; // Feste Transparenz
+        shieldColor.a = 100;
 
-        // Äußerer Schild-Ring
+        // Outer shield ring
         DrawCircleV(position, shieldRadius, shieldColor);
 
-        // Innerer Ring für Tiefe
+        // Inner ring for depth
         Color innerColor = BLUE;
-        innerColor.a = 50; // Feste Transparenz
+        innerColor.a = 50;
         DrawCircleV(position, shieldRadius - 2.0f, innerColor);
 
-        // Schild-Umrandung
+        // Shield border
         Color borderColor = BLUE;
-        borderColor.a = 180; // Feste Transparenz
+        borderColor.a = 180;
         DrawCircleLines((int)position.x, (int)position.y, (int)shieldRadius, borderColor);
 
-        // Zusätzliche Energie-Effekte (rotierende Partikel)
+        // Additional energy effects (rotating particles)
         for (int i = 0; i < 6; i++) {
             float angle = (shieldAnimationTimer * 1.5f + (float)i * 60.0f) * DEG2RAD;
             Vector2 particlePos = {
@@ -123,22 +150,22 @@ void Spaceship::Draw() const {
             };
 
             Color particleColor = WHITE;
-            particleColor.a = 120; // Feste Transparenz
+            particleColor.a = 120;
             DrawCircleV(particlePos, 1.0f, particleColor);
         }
     }
 
-    // Raumschiff-Sichtbarkeit bei Unverwundbarkeit (Blinken)
+    // Spaceship visibility during invulnerability (blinking)
     bool shouldDrawShip = true;
     if (invulnerable) {
-        // Schnelles Blinken während Unverwundbarkeit
-        float blinkRate = 8.0f; // 8 mal pro Sekunde blinken
+        // Fast blinking during invulnerability
+        float blinkRate = 8.0f; // Blink 8 times per second
         shouldDrawShip = ((int)(invulnerabilityTimer * blinkRate) % 2) == 0;
     }
 
-    if (!shouldDrawShip) return; // Raumschiff nicht zeichnen wenn es blinkt
+    if (!shouldDrawShip) return; // Don't draw spaceship when blinking
 
-    // Raumschiffkörper zeichnen
+    // Draw spaceship body
     for (int i = 0; i < 3; i++) {
         int next = (i + 1) % 3;
         Vector2 p1 = {
@@ -152,28 +179,28 @@ void Spaceship::Draw() const {
         DrawLineV(p1, p2, BLACK);
     }
 
-    // Schubeffekt mit Partikeln
+    // Thrust effect with particles
     if (isThrusting) {
-        // Mitte der hinteren Kante des Raumschiffs
+        // Center of the rear edge of the spaceship
         Vector2 thrustBase = {
             (trianglePoints[1].x + trianglePoints[2].x) * 0.5f,
             (trianglePoints[1].y + trianglePoints[2].y) * 0.5f
         };
 
-        // Richtungsvektor (nach hinten weg vom Raumschiff)
+        // Direction vector (backward away from spaceship)
         Vector2 thrustDirection = {
             position.x - trianglePoints[0].x,
             position.y - trianglePoints[0].y
         };
 
-        // Normalisieren
+        // Normalize
         float length = sqrtf(thrustDirection.x * thrustDirection.x + thrustDirection.y * thrustDirection.y);
         if (length > 0) {
             thrustDirection.x /= length;
             thrustDirection.y /= length;
         }
 
-        // Partikel erzeugen
+        // Generate particles
         for (int i = 0; i < GetRandomValue(4, 6); i++) {
             Vector2 particlePos = {
                 thrustBase.x + (float)GetRandomValue(-5, 5) + thrustDirection.x * (float)GetRandomValue(10, 25),
@@ -193,6 +220,13 @@ void Spaceship::Draw() const {
     }
 }
 
+/**
+ * Applies thrust force to the spaceship in the direction it's facing
+ * Calculates thrust direction from triangle geometry and applies acceleration
+ * Enforces maximum speed limit to prevent uncontrolled acceleration
+ * Only applies thrust when isThrusting flag is active
+ * @param deltaTime Time elapsed since last frame for smooth acceleration
+ */
 void Spaceship::ApplyThrust(float deltaTime) {
     if (!isThrusting) return;
 
@@ -201,7 +235,7 @@ void Spaceship::ApplyThrust(float deltaTime) {
         trianglePoints[0].y - position.y
     };
 
-    // Normalisieren
+    // Normalize
     float length = sqrtf(thrustDirection.x * thrustDirection.x + thrustDirection.y * thrustDirection.y);
     if (length > 0.0f) {
         thrustDirection.x /= length;
@@ -210,7 +244,7 @@ void Spaceship::ApplyThrust(float deltaTime) {
         velocity.x += thrustDirection.x * SPACESHIP_ACCELERATION * deltaTime;
         velocity.y += thrustDirection.y * SPACESHIP_ACCELERATION * deltaTime;
 
-        // Geschwindigkeitsbegrenzung
+        // Speed limiting
         float speed = sqrtf(velocity.x * velocity.x + velocity.y * velocity.y);
         if (speed > MAX_SPACESHIP_SPEED) {
             velocity.x = (velocity.x / speed) * MAX_SPACESHIP_SPEED;
@@ -219,59 +253,174 @@ void Spaceship::ApplyThrust(float deltaTime) {
     }
 }
 
-void Spaceship::StartThrust() { isThrusting = true; }
-void Spaceship::StopThrust() { isThrusting = false; }
+/**
+ * Activates thrust mode for the spaceship
+ * Sets the thrusting flag to enable thrust application and visual effects
+ */
+void Spaceship::StartThrust() {
+    isThrusting = true;
+}
 
+/**
+ * Deactivates thrust mode for the spaceship
+ * Clears the thrusting flag to stop thrust application and visual effects
+ */
+void Spaceship::StopThrust() {
+    isThrusting = false;
+}
+
+/**
+ * Rotates the spaceship by the specified direction and speed
+ * Updates rotation angle based on direction, rotation speed, and delta time
+ * @param direction Rotation direction (-1 for left, +1 for right)
+ * @param deltaTime Time elapsed since last frame for smooth rotation
+ */
 void Spaceship::Rotate(float direction, float deltaTime) {
     rotation += direction * SPACESHIP_ROTATION_SPEED * deltaTime;
 }
 
-// Schild-Methoden
+/**
+ * Activates the protective shield around the spaceship
+ * Sets shield duration to 8 seconds and resets animation timer
+ * Provides temporary protection from collisions
+ */
 void Spaceship::ActivateShield() {
     shieldActive = true;
-    shieldTimer = 8.0f; // 8 Sekunden Schild-Dauer
+    shieldTimer = 8.0f; // 8 seconds shield duration
     shieldAnimationTimer = 0.0f;
 }
 
+/**
+ * Deactivates the protective shield
+ * Immediately removes shield protection and resets timer
+ */
 void Spaceship::DeactivateShield() {
     shieldActive = false;
     shieldTimer = 0.0f;
 }
 
+/**
+ * Checks if the shield is currently active
+ * @return True if shield is providing protection, false otherwise
+ */
 bool Spaceship::IsShieldActive() const {
     return shieldActive;
 }
 
+/**
+ * Gets the remaining time for shield protection
+ * @return Float value representing seconds remaining for shield
+ */
 float Spaceship::GetShieldTimeRemaining() const {
     return shieldTimer;
 }
 
-// Getter-Methoden
-Vector2 Spaceship::GetPosition() const { return position; }
-float Spaceship::GetRotation() const { return rotation; }
-Vector2 Spaceship::GetVelocity() const { return velocity; }
-void Spaceship::setInvulnerableTimer(float value) { invulnerabilityTimer = 3.0f; }
-void Spaceship::setIsInvulnerable(bool value) { invulnerable = value; }
-bool Spaceship::IsInvulnerable() const { return invulnerable; }
-float Spaceship::GetInvulnerabilityTime() const { return invulnerabilityTimer; }  // Neue Methode
-bool Spaceship::IsThrusting() const { return isThrusting; }
-int Spaceship::GetLives() const { return lives; }
-void Spaceship::AddLife() { lives++; }
+// Getter methods for spaceship state access
+/**
+ * Gets the current position of the spaceship
+ * @return Vector2 containing x,y coordinates of spaceship center
+ */
+Vector2 Spaceship::GetPosition() const { 
+    return position;
+}
 
+/**
+ * Gets the current rotation angle of the spaceship
+ * @return Float value representing rotation in degrees
+ */
+float Spaceship::GetRotation() const { 
+    return rotation; 
+}
+
+/**
+ * Gets the current velocity vector of the spaceship
+ * @return Vector2 containing x,y velocity components
+ */
+Vector2 Spaceship::GetVelocity() const { 
+    return velocity;
+}
+
+/**
+ * Sets the invulnerability timer to a fixed duration
+ * @param value Unused parameter, timer is always set to 3.0 seconds
+ */
+void Spaceship::setInvulnerableTimer(float value) {
+    invulnerabilityTimer = 3.0f; 
+}
+
+/**
+ * Sets the invulnerability status of the spaceship
+ * @param value Boolean flag for invulnerability state
+ */
+void Spaceship::setIsInvulnerable(bool value) { 
+    invulnerable = value;
+}
+
+/**
+ * Checks if the spaceship is currently invulnerable
+ * @return True if spaceship cannot take damage, false otherwise
+ */
+bool Spaceship::IsInvulnerable() const {
+    return invulnerable; 
+}
+
+/**
+ * Gets the remaining invulnerability time
+ * @return Float value representing seconds remaining for invulnerability
+ */
+float Spaceship::GetInvulnerabilityTime() const {
+    return invulnerabilityTimer;
+}
+
+/**
+ * Checks if the spaceship is currently thrusting
+ * @return True if thrust is being applied, false otherwise
+ */
+bool Spaceship::IsThrusting() const { 
+    return isThrusting;
+}
+
+/**
+ * Gets the current number of lives remaining
+ * @return Integer count of remaining lives
+ */
+int Spaceship::GetLives() const { 
+    return lives;
+}
+
+/**
+ * Adds one extra life to the spaceship
+ * Increments the lives counter by one
+ */
+void Spaceship::AddLife() { 
+    lives++; 
+}
+
+/**
+ * Gets the collision bounding rectangle for the spaceship
+ * Creates a square bounding box centered on the spaceship position
+ * @return Rectangle representing collision boundaries
+ */
 Rectangle Spaceship::GetBounds() const {
     return { position.x - triangleSize, position.y - triangleSize,
              triangleSize * 2.0f, triangleSize * 2.0f };
 }
 
+/**
+ * Handles losing a life and respawning with temporary invulnerability
+ * Decrements life count, activates invulnerability, deactivates shield
+ * Resets position and movement while preserving invulnerability status
+ * Critical: Sets invulnerability BEFORE calling Reset() to prevent override
+ */
 void Spaceship::LoseLife() {
     lives--;
-    // ZUERST Unverwundbarkeit setzen
+    // FIRST set invulnerability
     invulnerable = true;
-    invulnerabilityTimer = 3.0f; // 3 Sekunden Unverwundbarkeit nach Respawn
+    invulnerabilityTimer = 3.0f; // 3 seconds invulnerability after respawn
 
-    // Schild deaktivieren wenn Leben verloren wird
+    // Deactivate shield when life is lost
     DeactivateShield();
 
-    // DANN erst Reset() - aber ohne die Unverwundbarkeit zu überschreiben
+    // THEN call Reset() - but without overriding invulnerability
     Reset();
 }

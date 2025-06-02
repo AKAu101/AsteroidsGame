@@ -4,17 +4,26 @@
 
 class Score {
 private:
-    int currentScore;
-    int highScore;
-    int level;
+    int currentScore;       // Current game session score
+    int highScore;          // Best score achieved across all sessions
+    int level;              // Current level based on score progression
 
 public:
     Score();
-    void AddPoints(int points);
+
+    void AddPoints(int points /* Number of points to add to current score */);
     void Reset();
-    int GetScore() const { return currentScore; }
-    int GetHighScore() const { return highScore; }
-    int GetLevel() const { return level; }
+
+    int GetScore() const {
+        return currentScore;
+    }
+    int GetHighScore() const {
+        return highScore;
+    }
+    int GetLevel() const {
+        return level;
+    }
+
     void UpdateLevel();
     void SaveHighScore();
     void LoadHighScore();

@@ -140,7 +140,6 @@
     <ClCompile Include="score.cpp" />
     <ClCompile Include="spaceship.cpp" />
     <ClCompile Include="uiRenderer.cpp" />
-    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="asteroid.h" />
@@ -156,7 +155,6 @@
     <ClInclude Include="score.h" />
     <ClInclude Include="spaceship.h" />
     <ClInclude Include="uiRenderer.h" />
-    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="highscore.dat" />

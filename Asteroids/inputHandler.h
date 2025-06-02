@@ -9,15 +9,14 @@ class ObjectManager;
 
 class InputHandler {
 private:
-    Game& game;
-    GameStateManager& stateManager;
-    ObjectManager& objectManager;
-
-    float& projectileCooldown;
-    int& currentItem;
-    bool& hasRapid;
-    int& amountRapid;
-    bool& hasShield;
+    Game& game;                         // Reference to main game instance
+    GameStateManager& stateManager;     // Reference to game state manager
+    ObjectManager& objectManager;       // Reference to object manager
+    float& projectileCooldown;          // Reference to projectile firing cooldown timer
+    int& currentItem;                   // Reference to currently held power-up item
+    bool& hasRapid;                     // Reference to rapid fire status flag
+    int& amountRapid;                   // Reference to remaining rapid fire shots
+    bool& hasShield;                    // Reference to shield protection status
 
     void HandleMainMenuInput();
     void HandleOptionsInput();
@@ -25,11 +24,17 @@ private:
     void HandleGameOverInput();
     void HandleHighscoreDisplayInput();
     void HandleNameEntryInput();
-    void HandleCreditsInput();  // Neue Methode für Credits
+    void HandleCreditsInput();
 
 public:
-    InputHandler(Game& game, GameStateManager& stateMgr, ObjectManager& objMgr,
-        float& projCooldown, int& item, bool& rapid, int& rapidAmount, bool& shield);
+    InputHandler(Game& game /* Reference to main game instance */,
+        GameStateManager& stateMgr /* Reference to state manager */,
+        ObjectManager& objMgr /* Reference to object manager */,
+        float& projCooldown /* Reference to projectile cooldown timer */,
+        int& item /* Reference to current power-up item */,
+        bool& rapid /* Reference to rapid fire status */,
+        int& rapidAmount /* Reference to remaining rapid fire shots */,
+        bool& shield /* Reference to shield status */);
 
     void HandleInput(float deltaTime);
 

@@ -5,19 +5,21 @@
 #include <vector>
 
 struct HighscoreEntry {
-    std::string name = "";
-    int score = 0;
+    std::string name = "";      // Player's name (max 5 characters)
+    int score = 0;              // Achieved score value
 
     HighscoreEntry() = default;
-    HighscoreEntry(const std::string& playerName, int playerScore)
+
+    HighscoreEntry(const std::string& playerName /* Player's name for the entry */,
+        int playerScore /* Score value achieved by the player */)
         : name(playerName), score(playerScore) {
     }
 };
 
 class HighscoreManager {
 private:
-    std::vector<HighscoreEntry> highscores;
-    static const int MAX_HIGHSCORES = 10;
+    std::vector<HighscoreEntry> highscores;     // Collection of high score entries
+    static const int MAX_HIGHSCORES = 10;      // Maximum number of high scores to store
 
     void LoadHighscores();
     void SaveHighscores();
@@ -27,10 +29,11 @@ public:
     HighscoreManager();
     ~HighscoreManager();
 
-    // Hauptfunktionen
-    void AddHighscore(const std::string& name, int score);
-    bool IsNewHighscore(int score) const;
-    int GetHighscorePosition(int score) const;
+    // Main functions
+    void AddHighscore(const std::string& name /* Player's name (max 5 characters) */,
+        int score /* Score value to add to the list */);
+    bool IsNewHighscore(int score /* Score to check against current high scores */) const;
+    int GetHighscorePosition(int score /* Score to find ranking position for */) const;
 
     // Getter
     const std::vector<HighscoreEntry>& GetHighscores() const { return highscores; }

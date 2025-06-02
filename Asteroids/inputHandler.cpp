@@ -3,6 +3,19 @@
 #include "globals.h"
 #include "game.h" 
 
+/**
+ * Constructor for InputHandler class
+ * Initializes all references to game systems and shared state variables
+ * Sets up dependencies for input handling across different game states
+ * @param gameRef Reference to the main game instance
+ * @param stateMgr Reference to the game state manager
+ * @param objMgr Reference to the object manager
+ * @param projCooldown Reference to projectile cooldown timer
+ * @param item Reference to current item type
+ * @param rapid Reference to rapid fire status flag
+ * @param rapidAmount Reference to remaining rapid fire shots
+ * @param shield Reference to shield status flag
+ */
 InputHandler::InputHandler(Game& gameRef, GameStateManager& stateMgr, ObjectManager& objMgr,
     float& projCooldown, int& item, bool& rapid,
     int& rapidAmount, bool& shield) :
@@ -16,6 +29,12 @@ InputHandler::InputHandler(Game& gameRef, GameStateManager& stateMgr, ObjectMana
     hasShield(shield) {
 }
 
+/**
+ * Main input handling dispatcher method
+ * Routes input handling to appropriate state-specific methods
+ * Called every frame to process user input based on current game state
+ * @param deltaTime Time elapsed since last frame in seconds
+ */
 void InputHandler::HandleInput(float deltaTime) {
     switch (stateManager.GetCurrentState()) {
     case MAIN_MENU:
@@ -42,8 +61,14 @@ void InputHandler::HandleInput(float deltaTime) {
     }
 }
 
+/**
+ * Handles input for the main menu navigation
+ * Processes menu selection with UP/DOWN keys and confirms with ENTER
+ * Supports 5 menu options: Start Game, Controls, Highscores, Credits, Quit
+ * ESC key provides alternative quit option
+ */
 void InputHandler::HandleMainMenuInput() {
-    // Navigation im Hauptmenü (jetzt 5 Optionen)
+    // Navigation in main menu (now 5 options)
     if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
         int selection = stateManager.GetMenuSelection();
         stateManager.SetMenuSelection((selection - 1 + 5) % 5);
@@ -53,11 +78,11 @@ void InputHandler::HandleMainMenuInput() {
         stateManager.SetMenuSelection((selection + 1) % 5);
     }
 
-    // Auswahl bestätigen
+    // Confirm selection
     if (IsKeyPressed(KEY_ENTER)) {
         switch (stateManager.GetMenuSelection()) {
         case 0: // START GAME
-            game.ResetGame(); // WICHTIG: Spiel zurücksetzen vor dem Start!
+            game.ResetGame(); // IMPORTANT: Reset game before starting!
             stateManager.SetState(IN_GAME);
             break;
         case 1: // CONTROLS
@@ -75,16 +100,22 @@ void InputHandler::HandleMainMenuInput() {
         }
     }
 
-    // Alternative: ESC zum Beenden
+    // Alternative: ESC to quit
     if (IsKeyPressed(KEY_ESCAPE)) {
         game.SetGameRunning(false);
     }
 }
 
+/**
+ * Handles all gameplay input during active game state
+ * Processes player movement, rotation, shooting, item usage, and menu access
+ * Manages rapid fire mechanics and cooldown timers
+ * @param deltaTime Time elapsed since last frame for smooth movement
+ */
 void InputHandler::HandleGameInput(float deltaTime) {
     auto& player = objectManager.GetPlayer();
 
-    // Bewegungssteuerung
+    // Movement controls
     if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) {
         player.StartThrust();
         player.ApplyThrust(deltaTime);
@@ -101,7 +132,7 @@ void InputHandler::HandleGameInput(float deltaTime) {
         player.Rotate(1, deltaTime);
     }
 
-    // Schießen
+    // Shooting
     if (IsKeyDown(KEY_SPACE) && projectileCooldown <= 0) {
         Vector2 playerPos = player.GetPosition();
         float playerRotation = player.GetRotation();
@@ -130,62 +161,83 @@ void InputHandler::HandleGameInput(float deltaTime) {
         }
     }
 
-    // Item verwenden
+    // Use item
     if (IsKeyPressed(KEY_LEFT_SHIFT)) {
         UseItem();
     }
 
-    // Zurück zum Hauptmenü
-    if (IsKeyPressed(KEY_ESCAPE)) {
+    // Return to main menu
+    if (IsKeyPressed(KEY_TAB)) {
         stateManager.SetState(MAIN_MENU);
     }
 }
 
+/**
+ * Handles input for the game over screen
+ * Provides options to return to menu, quit game, or quickly restart
+ * ENTER returns to main menu, ESC quits, R provides quick restart
+ */
 void InputHandler::HandleGameOverInput() {
-    // Zurück zum Hauptmenü
+    // Return to main menu
     if (IsKeyPressed(KEY_ENTER)) {
         stateManager.SetState(MAIN_MENU);
     }
 
-    // Alternativ: ESC zum Beenden
+    // Alternative: ESC to quit
     if (IsKeyPressed(KEY_ESCAPE)) {
         game.SetGameRunning(false);
     }
 
-    // Schneller Neustart
+    // Quick restart
     if (IsKeyPressed(KEY_R)) {
-        game.ResetGame(); // WICHTIG: Spiel zurücksetzen beim schnellen Neustart!
+        game.ResetGame(); // IMPORTANT: Reset game on quick restart!
         stateManager.SetState(IN_GAME);
     }
 }
 
+/**
+ * Handles input for the options/controls screen
+ * Currently provides basic navigation placeholder and return to menu
+ * Future scroll functionality can be implemented here
+ */
 void InputHandler::HandleOptionsInput() {
-    // Navigation in den Controls
+    // Navigation in controls
     if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_W)) {
-        // Scroll-Funktion könnte hier implementiert werden
+        // Scroll function could be implemented here
     }
     else if (IsKeyPressed(KEY_DOWN) || IsKeyPressed(KEY_S)) {
-        // Scroll-Funktion könnte hier implementiert werden
+        // Scroll function could be implemented here
     }
 
-    // Zurück zum Hauptmenü
+    // Return to main menu
     if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_ESCAPE)) {
         stateManager.SetState(MAIN_MENU);
     }
 }
 
+/**
+ * Handles input for the credits screen
+ * Returns to main menu on any of the specified key presses
+ * Provides multiple exit options for user convenience
+ */
 void InputHandler::HandleCreditsInput() {
-    // Zurück zum Hauptmenü bei beliebiger Taste
+    // Return to main menu on any key
     if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_ESCAPE) ||
         IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_BACKSPACE)) {
         stateManager.SetState(MAIN_MENU);
     }
 }
 
+/**
+ * Handles input for highscore name entry
+ * Processes character input (A-Z, 0-9, underscore), backspace editing
+ * Validates name completion and handles confirmation or cancellation
+ * Supports 5-character names with automatic padding
+ */
 void InputHandler::HandleNameEntryInput() {
     std::string currentName = stateManager.GetPlayerName();
 
-    // Buchstaben A-Z eingeben
+    // Enter letters A-Z
     for (int key = KEY_A; key <= KEY_Z; key++) {
         if (IsKeyPressed(key) && currentName.length() < 5) {
             char letter = 'A' + (key - KEY_A);
@@ -194,7 +246,7 @@ void InputHandler::HandleNameEntryInput() {
         }
     }
 
-    // Zahlen 0-9 eingeben
+    // Enter numbers 0-9
     for (int key = KEY_ZERO; key <= KEY_NINE; key++) {
         if (IsKeyPressed(key) && currentName.length() < 5) {
             char number = '0' + (key - KEY_ZERO);
@@ -203,32 +255,32 @@ void InputHandler::HandleNameEntryInput() {
         }
     }
 
-    // Unterstrich und Bindestrich
+    // Underscore and dash
     if (IsKeyPressed(KEY_MINUS) && currentName.length() < 5) {
         currentName += '_';
         stateManager.SetPlayerName(currentName);
     }
 
-    // Backspace - letztes Zeichen löschen
+    // Backspace - delete last character
     if (IsKeyPressed(KEY_BACKSPACE) && !currentName.empty()) {
         currentName.pop_back();
         stateManager.SetPlayerName(currentName);
     }
 
-    // Enter - Name bestätigen (nur wenn mindestens 1 Zeichen eingegeben)
+    // Enter - confirm name (only if at least 1 character entered)
     if (IsKeyPressed(KEY_ENTER) && stateManager.IsNameComplete()) {
-        // Name mit Unterstrichen auffüllen falls kürzer als 5 Zeichen
+        // Pad name with underscores if shorter than 5 characters
         while (currentName.length() < 5) {
             currentName += '_';
         }
         stateManager.SetPlayerName(currentName);
 
-        // Highscore hinzufügen über Game-Klasse
+        // Add highscore through Game class
         game.AddHighscoreEntry(currentName, stateManager.GetNameEntryScore());
         stateManager.SetState(HIGHSCORE_DISPLAY);
     }
 
-    // ESC - Abbrechen (Standardname verwenden)
+    // ESC - cancel (use default name)
     if (IsKeyPressed(KEY_ESCAPE)) {
         stateManager.SetPlayerName("ANON_");
         game.AddHighscoreEntry("ANON_", stateManager.GetNameEntryScore());
@@ -236,19 +288,29 @@ void InputHandler::HandleNameEntryInput() {
     }
 }
 
+/**
+ * Handles input for the highscore display screen
+ * Simple input handling that returns to main menu on ENTER or ESC
+ */
 void InputHandler::HandleHighscoreDisplayInput() {
     if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_ESCAPE)) {
         stateManager.SetState(MAIN_MENU);
     }
 }
 
+/**
+ * Activates and uses the currently held power-up item
+ * Handles different item types: Rapid Fire, Shield, and Extra Life
+ * Resets current item to 0 after use
+ * Updates relevant game state flags and counters
+ */
 void InputHandler::UseItem() {
     auto& player = objectManager.GetPlayer();
 
     printf("UseItem called! currentItem = %d\n", currentItem);
 
     switch (currentItem) {
-    case 0: // Kein Item
+    case 0: // No item
         printf("No item to use\n");
         break;
 
@@ -257,7 +319,6 @@ void InputHandler::UseItem() {
         hasRapid = true;
         amountRapid = 50;
         currentItem = 0;
-        printf("hasRapid = %s, amountRapid = %d\n", hasRapid ? "true" : "false", amountRapid);
         break;
 
     case 2: // Shield
@@ -265,7 +326,6 @@ void InputHandler::UseItem() {
         hasShield = true;
         player.ActivateShield();
         currentItem = 0;
-        printf("hasShield = %s\n", hasShield ? "true" : "false");
         break;
 
     case 3: // Extra Life
@@ -275,7 +335,6 @@ void InputHandler::UseItem() {
         break;
 
     default:
-        printf("Unknown item type: %d\n", currentItem);
         currentItem = 0;
         break;
     }
